@@ -4,17 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../models/point_record.dart';
 import '../viewmodels/point_view_model.dart';
-import '../utils/point_manager.dart';
-import '../utils/app_theme.dart';
-import 'history_screen.dart';
-import 'settings_screen.dart';
-import 'transaction_form_screen.dart';
-
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
-import '../models/point_record.dart';
-import '../viewmodels/point_view_model.dart';
 import '../viewmodels/dashboard_view_model.dart';
 import '../utils/point_manager.dart';
 import '../utils/app_theme.dart';
@@ -56,9 +45,6 @@ class _DashboardView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer2<PointViewModel, DashboardViewModel>(
       builder: (context, pointVm, dashboardVm, _) {
-        // 잔액 변화에 따른 애니메이션 트리거 (ViewModel에서 처리)
-        dashboardVm.checkAndTriggerAnimation();
-
         return Scaffold(
           backgroundColor: AppColors.background,
           body: SafeArea(

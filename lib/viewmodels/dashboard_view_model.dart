@@ -10,27 +10,32 @@ class DashboardViewModel extends ChangeNotifier {
 
   DashboardViewModel({required this.pointViewModel}) {
     _prevBalance = pointViewModel.currentBalance;
+    // PointViewModel의 변경사항을 직접 리스닝하여 애니메이션 트리거
+    pointViewModel.addListener(_onPointModelChanged);
   }
 
   double get balanceScale => _balanceScale;
 
-  /// 잔액 변화를 감지하고 애니메이션을 트리거해야 하는지 확인합니다.
-  bool checkAndTriggerAnimation() {
+  void _onPointModelChanged() {
     if (pointViewModel.currentBalance != _prevBalance) {
       _prevBalance = pointViewModel.currentBalance;
       _triggerBalanceScaleAnimation();
-      return true;
     }
-    return false;
   }
 
   void _triggerBalanceScaleAnimation() {
-    _balanceScale = 1.1;
+    _balanceScale = 1.2; // 조금 더 눈에 띄게 변경
     notifyListeners();
     
     Future.delayed(const Duration(milliseconds: 200), () {
       _balanceScale = 1.0;
       notifyListeners();
     });
+  }
+
+  @override
+  void dispose() {
+    pointViewModel.removeListener(_onPointModelChanged);
+    super.dispose();
   }
 }

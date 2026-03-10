@@ -5,38 +5,12 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import '../models/point_record.dart';
 import '../viewmodels/point_view_model.dart';
-import '../utils/point_manager.dart';
-import '../utils/app_theme.dart';
-import 'dashboard_screen.dart';
-import 'edit_transaction_screen.dart';
-
-enum TimePeriod { week, month, year }
-
-extension TimePeriodExt on TimePeriod {
-  String get label {
-    switch (this) {
-      case TimePeriod.week:
-        return '주간';
-      case TimePeriod.month:
-        return '월간';
-      case TimePeriod.year:
-        return '연간';
-    }
-  }
-}
-
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
-import 'package:fl_chart/fl_chart.dart';
-import 'package:intl/intl.dart';
-import '../models/point_record.dart';
-import '../viewmodels/point_view_model.dart';
 import '../viewmodels/history_view_model.dart';
 import '../utils/point_manager.dart';
 import '../utils/app_theme.dart';
 import 'dashboard_screen.dart';
 import 'edit_transaction_screen.dart';
+
 
 /// 앱의 모든 거래 기록을 보여주고 통계를 제공하는 화면입니다.
 class HistoryScreen extends StatelessWidget {
