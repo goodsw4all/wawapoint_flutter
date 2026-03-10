@@ -92,15 +92,16 @@ void main() {
 }
 
 class _FakePathProvider extends PathProviderPlatform {
-  @override
-  Future<String> getApplicationDocumentsPath() async {
-    final dir = Directory.systemTemp.createTempSync('wawapoint_test');
-    return dir.path;
+  String? _path;
+
+  Future<String> _getPath() async {
+    _path ??= Directory.systemTemp.createTempSync('wawapoint_test').path;
+    return _path!;
   }
 
   @override
-  Future<String> getTemporaryPath() async {
-    final dir = Directory.systemTemp.createTempSync('wawapoint_test');
-    return dir.path;
-  }
+  Future<String> getApplicationDocumentsPath() => _getPath();
+
+  @override
+  Future<String> getTemporaryPath() => _getPath();
 }
