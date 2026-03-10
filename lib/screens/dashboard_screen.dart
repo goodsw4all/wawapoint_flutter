@@ -213,6 +213,7 @@ class _ActionButtons extends StatelessWidget {
             label: '포인트 받기',
             icon: Icons.arrow_downward_rounded,
             gradient: AppGradients.incomeButton,
+            iconColor: AppColors.greenAccent,
             shadowColor: AppColors.greenAccent.withValues(alpha: 0.3),
             onTap: () => onTap(TransactionType.income),
           ),
@@ -223,6 +224,7 @@ class _ActionButtons extends StatelessWidget {
             label: '사용하기',
             icon: Icons.arrow_upward_rounded,
             gradient: AppGradients.expenseButton,
+            iconColor: AppColors.redAccent,
             shadowColor: AppColors.redAccent.withValues(alpha: 0.3),
             onTap: () => onTap(TransactionType.expense),
           ),
@@ -237,6 +239,7 @@ class _ActionButton extends StatefulWidget {
     required this.label,
     required this.icon,
     required this.gradient,
+    required this.iconColor,
     required this.shadowColor,
     required this.onTap,
   });
@@ -244,6 +247,7 @@ class _ActionButton extends StatefulWidget {
   final String label;
   final IconData icon;
   final LinearGradient gradient;
+  final Color iconColor;
   final Color shadowColor;
   final VoidCallback onTap;
 
@@ -290,7 +294,7 @@ class _ActionButtonState extends State<_ActionButton>
                   shape: BoxShape.circle,
                 ),
                 child: Icon(widget.icon,
-                    color: AppColors.cardDark, size: 28),
+                    color: widget.iconColor, size: 28),
               ),
               const SizedBox(height: 14),
               Text(
