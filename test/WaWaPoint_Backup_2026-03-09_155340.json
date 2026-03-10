@@ -1,0 +1,94 @@
+{
+  "exportDate" : "2026-03-09T06:53:40Z",
+  "records" : [
+    {
+      "amount" : 4,
+      "balanceAfter" : 33500,
+      "date" : "2026-03-09T06:25:32Z",
+      "id" : "D03971A0-1F86-4419-93DB-4D036141EB92",
+      "reason" : "3월 용돈",
+      "type" : "income"
+    },
+    {
+      "amount" : 4000,
+      "balanceAfter" : 23500,
+      "date" : "2026-02-28T03:43:50Z",
+      "id" : "41EAB9AD-16A8-4297-8FB4-A63D3BD16D92",
+      "reason" : "메론ㅇ",
+      "type" : "expense"
+    },
+    {
+      "amount" : 1,
+      "balanceAfter" : 27500,
+      "date" : "2026-02-23T00:48:30Z",
+      "id" : "97FE5357-4514-4CE7-9064-7EC62D00250C",
+      "reason" : "축구 방과후에 대한 내마음을 잘 알고 판단했기 때문이다good!!!!",
+      "type" : "income"
+    },
+    {
+      "amount" : 2,
+      "balanceAfter" : 25000,
+      "date" : "2026-02-15T01:47:43Z",
+      "id" : "6222CDDA-57E1-4C26-B90A-E032BC0C2719",
+      "reason" : "인버티드 로우를 7개 성공하고 10개 까지\n가서 보너스 점수까지!!!!!",
+      "type" : "income"
+    },
+    {
+      "amount" : 1,
+      "balanceAfter" : 20000,
+      "date" : "2026-02-10T09:04:27Z",
+      "id" : "DC934B42-380B-4414-97DD-0F8171E4C628",
+      "reason" : "말하기 조금 그런 걸 물어보는 질문을 받았을때 말하지않고 안된다고 부드럽게 거절했다…….나…..잘했지??훗!!!!",
+      "type" : "income"
+    },
+    {
+      "amount" : 1,
+      "balanceAfter" : 17500,
+      "date" : "2026-02-05T08:46:51Z",
+      "id" : "1736622B-23AA-48A2-8B4F-1DF2F019CB87",
+      "reason" : "추가 포인트 드립니다 (체르니의 건)\n",
+      "type" : "income"
+    },
+    {
+      "amount" : 2,
+      "balanceAfter" : 15000,
+      "date" : "2026-02-05T08:46:17Z",
+      "id" : "FA912AF0-CA14-4D87-B277-B9AFB0E34DAE",
+      "reason" : "체르니 100을 끝냈습니다 그동안 고생했습니다!!! \n",
+      "type" : "income"
+    },
+    {
+      "amount" : 4,
+      "balanceAfter" : 10000,
+      "date" : "2026-02-01T07:44:59Z",
+      "id" : "8065D4B2-5325-4184-BBD6-E517F13BE0BC",
+      "reason" : "2월 용돈 \n",
+      "type" : "income"
+    },
+    {
+      "amount" : 10000,
+      "balanceAfter" : 0,
+      "date" : "2026-01-26T05:23:05Z",
+      "id" : "923B387B-59E0-4D5F-981F-E8CE7527E75C",
+      "reason" : "와와 인형 뽑기\n",
+      "type" : "expense"
+    },
+    {
+      "amount" : 1,
+      "balanceAfter" : 10000,
+      "date" : "2026-01-25T00:12:55Z",
+      "id" : "9BCEB113-8598-4348-A04C-6967C3498547",
+      "reason" : "독감을 용기있게 이겨내고 있어요",
+      "type" : "income"
+    },
+    {
+      "amount" : 3,
+      "balanceAfter" : 7500,
+      "date" : "2026-01-21T08:02:49Z",
+      "id" : "687CE324-6505-4604-B867-B9135E24CBA8",
+      "reason" : "오늘 세운 계획이 엄청 많고 숙제도 많았어서 조금 힘들었지만 완벽하게 성공해냈기 때문이다",
+      "type" : "income"
+    }
+  ],
+  "version" : "1.0"
+}
