@@ -5,15 +5,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wawapoint/viewmodels/point_view_model.dart';
 import 'package:wawapoint/viewmodels/backup_view_model.dart';
 import 'package:wawapoint/utils/record_database.dart';
+import 'package:wawapoint/utils/point_manager.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   // initialize sqflite ffi implementation for desktop tests
   sqfliteFfiInit();
   databaseFactory = databaseFactoryFfi;
+  SharedPreferences.setMockInitialValues({});
 
   // provide a fake path_provider implementation that returns a temp directory
   PathProviderPlatform.instance = _FakePathProvider();

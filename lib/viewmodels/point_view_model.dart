@@ -172,13 +172,3 @@ class PointViewModel extends ChangeNotifier {
     return issues;
   }
 }
-) {
-        issues.add(
-          '거래 #${i + 1} (${r.reason}): 잔액 불일치 (예상: ${expected.toStringAsFixed(0)}원, 실제: ${r.balanceAfter.toStringAsFixed(0)}원)',
-        );
-      }
-    }
-    return issues;
-  }
-
-}
