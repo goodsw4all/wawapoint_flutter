@@ -19,9 +19,8 @@ class DashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // DashboardViewModel을 화면 범위의 Provider로 주입
     return ChangeNotifierProvider(
-      create: (_) => DashboardViewModel(
-        pointViewModel: context.read<PointViewModel>(),
-      ),
+      create: (_) =>
+          DashboardViewModel(pointViewModel: context.read<PointViewModel>()),
       child: const _DashboardView(),
     );
   }
@@ -134,9 +133,11 @@ class _BalanceCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.monetization_on_rounded,
-                  color: AppColors.greenAccent.withValues(alpha: 0.7),
-                  size: 18),
+              Icon(
+                Icons.monetization_on_rounded,
+                color: AppColors.greenAccent.withValues(alpha: 0.7),
+                size: 18,
+              ),
               const SizedBox(width: 6),
               const Text(
                 '현재 잔액',
@@ -178,8 +179,11 @@ class _BalanceCard extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.star_rounded,
-                    color: AppColors.amberStar, size: 20),
+                const Icon(
+                  Icons.star_rounded,
+                  color: AppColors.amberStar,
+                  size: 20,
+                ),
                 const SizedBox(width: 6),
                 Text(
                   vm.formattedPoints,
@@ -272,37 +276,43 @@ class _ActionButtonState extends State<_ActionButton>
         scale: _scale,
         duration: const Duration(milliseconds: 150),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 32),
+          padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
             gradient: widget.gradient,
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(18),
             boxShadow: [
               BoxShadow(
                 color: widget.shadowColor,
-                blurRadius: 12,
-                offset: const Offset(0, 6),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
-          child: Column(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 52,
-                height: 52,
+                width: 60, // 시각적 확인을 위해 대폭 확대
+                height: 60,
+                alignment: Alignment.center,
                 decoration: const BoxDecoration(
                   color: Colors.white,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(widget.icon,
-                    color: widget.iconColor, size: 28),
+                child: Icon(
+                  widget.icon,
+                  color: widget.iconColor,
+                  size: 28,
+                  weight: 10,
+                ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(width: 10),
               Text(
                 widget.label,
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
-                  fontSize: 16,
+                  fontSize: 15,
                 ),
               ),
             ],
@@ -326,15 +336,18 @@ class _RecentTransactions extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Icon(Icons.access_time_filled_rounded,
-                color: AppColors.blueAccent, size: 22),
+            const Icon(
+              Icons.access_time_filled_rounded,
+              color: AppColors.blueAccent,
+              size: 22,
+            ),
             const SizedBox(width: 8),
             Text(
               '최근 기록',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
             ),
             const Spacer(),
             GestureDetector(
@@ -354,8 +367,11 @@ class _RecentTransactions extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 2),
-                  Icon(Icons.chevron_right_rounded,
-                      size: 20, color: AppColors.blueAccent),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 20,
+                    color: AppColors.blueAccent,
+                  ),
                 ],
               ),
             ),
@@ -365,7 +381,9 @@ class _RecentTransactions extends StatelessWidget {
         if (vm.records.isEmpty)
           _EmptyState()
         else
-          ...vm.records.take(3).map(
+          ...vm.records
+              .take(3)
+              .map(
                 (r) => Padding(
                   padding: const EdgeInsets.only(bottom: 10),
                   child: TransactionTile(record: r),
@@ -401,10 +419,7 @@ class _EmptyState extends StatelessWidget {
           SizedBox(height: 6),
           Text(
             '포인트를 받거나 사용해보세요!',
-            style: TextStyle(
-              color: AppColors.textTertiary,
-              fontSize: 13,
-            ),
+            style: TextStyle(color: AppColors.textTertiary, fontSize: 13),
           ),
         ],
       ),
@@ -467,8 +482,11 @@ class TransactionTile extends StatelessWidget {
                 const SizedBox(height: 5),
                 Row(
                   children: [
-                    const Icon(Icons.calendar_month_rounded,
-                        size: 12, color: AppColors.textTertiary),
+                    const Icon(
+                      Icons.calendar_month_rounded,
+                      size: 12,
+                      color: AppColors.textTertiary,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       DateFormat('MMMM d, yyyy').format(record.date),
@@ -499,8 +517,7 @@ class TransactionTile extends StatelessWidget {
               ),
               const SizedBox(height: 5),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: AppColors.cardDarkElevated,
                   borderRadius: BorderRadius.circular(10),

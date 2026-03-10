@@ -457,6 +457,7 @@ classDiagram
 - **HistoryViewModel**: 필터링, 통계, 차트 데이터 가공
 - **TransactionFormViewModel**: 입력 폼 상태, 유효성 검사, 저장 프로세스
 - **DashboardViewModel**: 애니메이션 트리거, 대시보드 전용 시각적 상태
+    - *특이사항*: 런타임 예외 방지를 위해 `PointViewModel`을 직접 `addListener`로 구독하여, 빌드 시점이 아닌 데이터 변경 시점에 독립적으로 애니메이션을 트리거함.
 
 ---
 
@@ -471,8 +472,8 @@ classDiagram
 | 책임 | 설명 |
 |------|------|
 | **추상화** | ViewModel이 SQLite나 File System에 직접 접근하지 않도록 격리 |
-| **마이그레이션** | 앱 초기 실행 시 레거시 JSON 데이터를 SQLite로 자동 이관 |
-| **무결성** | 데이터 저장/읽기 시 형식 검증 및 일관성 유지 |
+| **마이그레이션** | 앱 초기 실행 시 레거시 JSON 데이터를 SQLite로 자동 이관 및 원본 삭제 |
+| **무결성** | 데이터 저장/읽기 시 형식 검증 및 일관성 유지 (잔액 재계산 포함) |
 
 ### 7.3 BackupViewModel — 백업/복원
 
@@ -901,6 +902,11 @@ graph LR
 | `AppDecorations.cardElevated()` | 강조 카드 (cardDarkElevated, radius 20) |
 | `AppDecorations.balanceCard()` | 잔액 카드 (보라색 테두리 + 그림자) |
 | `AppDecorations.pill()` | 알약형 컨테이너 (radius 20) |
+
+### 10.4 주요 컴포넌트 가이드
+
+#### 콤팩트 액션 버튼 (_ActionButton)
+세로 공간 효율을 위해 로고 옆에 텍스트가 오는 가로형(Row) 레이아웃을 채택하고, 가독성을 위해 아이콘에 `weight: 900` (Bold) 및 명시적인 `alignment: Alignment.center`를 적용함.
 
 ---
 
