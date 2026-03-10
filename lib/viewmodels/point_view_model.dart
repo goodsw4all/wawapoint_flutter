@@ -1,12 +1,12 @@
-import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
 import '../models/point_record.dart';
 import '../utils/point_manager.dart';
-import '../utils/record_database.dart';
+import '../repositories/point_repository.dart';
 
+/// 앱의 전역적인 포인트 상태와 거래 기록을 관리하는 ViewModel입니다.
+/// 가계부의 원장(SSOT: Single Source of Truth) 역할을 수행합니다.
 class PointViewModel extends ChangeNotifier {
+  final PointRepository _repository = PointRepository();
   final List<PointRecord> _records = [];
   double _currentBalance = 0.0;
 
@@ -24,73 +24,35 @@ class PointViewModel extends ChangeNotifier {
 
   // ───────────────────────── Persistence ──────────────────────────
 
-  /// legacy JSON file used before SQLite migration.
-  Future<File> _getLegacyDataFile() async {
-    final dir = await getApplicationDocumentsDirectory();
-    return File('${dir.path}/wawapoint_records.json');
-  }
-
+  /// 모든 기록을 로드하고 현재 잔액을 계산합니다.
   Future<void> loadRecords() async {
     await PointManager().load();
 
-    // first try loading from database
     try {
-      final dbRecords = await RecordDatabase.instance.getAllRecords();
+      final loadedRecords = await _repository.getAllRecords();
       _records
         ..clear()
-        ..addAll(dbRecords);
+        ..addAll(loadedRecords);
       _calculateBalance();
-      if (dbRecords.isNotEmpty) {
-        notifyListeners();
-        return;
-      }
-    } catch (_) {
-      // ignore, we'll try legacy file
+      notifyListeners();
+    } catch (e) {
+      // 로드 실패 시 처리 로직
+      if (kDebugMode) print('Load records failed: $e');
     }
-
-    // if db was empty, attempt migration from old json file
-    try {
-      final file = await _getLegacyDataFile();
-      if (await file.exists()) {
-        final content = await file.readAsString();
-        final List<dynamic> list = jsonDecode(content) as List<dynamic>;
-        final migrated = list
-            .map((e) => PointRecord.fromJson(e as Map<String, dynamic>))
-            .toList();
-
-        // populate both in-memory list and sqlite
-        _records.clear();
-        _records.addAll(migrated);
-        _records.sort((a, b) => b.date.compareTo(a.date));
-        _calculateBalance();
-
-        final db = RecordDatabase.instance;
-        await db.clearAll();
-        for (final r in migrated) {
-          await db.insertRecord(r);
-        }
-
-        // optionally remove legacy file so we don't migrate twice
-        await file.delete();
-      }
-    } catch (_) {}
-    notifyListeners();
   }
 
+  /// 모든 기록을 Repository에 저장합니다.
   Future<void> _saveRecords() async {
     try {
-      // write to sqlite instead of file; keep the json file for backwards
-      // compatibility or debugging but it's no longer authoritative.
-      final db = RecordDatabase.instance;
-      await db.clearAll();
-      for (final r in _records) {
-        await db.insertRecord(r);
-      }
-    } catch (_) {}
+      await _repository.overwriteAllRecords(_records);
+    } catch (e) {
+      if (kDebugMode) print('Save records failed: $e');
+    }
   }
 
   // ───────────────────────── Business Logic ──────────────────────────
 
+  /// 전체 기록을 바탕으로 현재 잔액을 다시 계산합니다.
   void _calculateBalance() {
     if (_records.isNotEmpty) {
       final sorted = [..._records]
@@ -101,6 +63,7 @@ class PointViewModel extends ChangeNotifier {
     }
   }
 
+  /// 포인트 수입을 추가합니다.
   Future<void> addPointIncome(int points, String reason) async {
     final amount = points.toDouble();
     final krw = PointManager().pointsToKRW(amount);
@@ -117,9 +80,10 @@ class PointViewModel extends ChangeNotifier {
     _records.insert(0, record);
     _currentBalance = newBalance;
     notifyListeners();
-    await _saveRecords();
+    await _repository.addRecord(record);
   }
 
+  /// 지출(원화)을 추가합니다. 잔액이 부족하면 false를 반환합니다.
   Future<bool> addExpense(double krw, String reason) async {
     if (!PointManager().canAfford(_currentBalance, krw)) {
       return false;
@@ -138,17 +102,17 @@ class PointViewModel extends ChangeNotifier {
     _records.insert(0, record);
     _currentBalance = newBalance;
     notifyListeners();
-    await _saveRecords();
+    await _repository.addRecord(record);
     return true;
   }
 
+  /// 특정 기록을 삭제합니다.
   Future<void> deleteRecord(PointRecord record) async {
     _records.removeWhere((r) => r.id == record.id);
-    await recalculateAllBalances();
-    notifyListeners();
-    await _saveRecords();
+    await recalculateAllBalances(); // 잔액 재계산 및 전체 저장
   }
 
+  /// 기존 기록을 수정합니다.
   Future<void> updateRecord(
     PointRecord record, {
     required double newAmount,
@@ -158,11 +122,10 @@ class PointViewModel extends ChangeNotifier {
     if (idx == -1) return;
     _records[idx].amount = newAmount;
     _records[idx].reason = newReason;
-    await recalculateAllBalances();
-    notifyListeners();
-    await _saveRecords();
+    await recalculateAllBalances(); // 잔액 재계산 및 전체 저장
   }
 
+  /// 모든 기록의 잔액(balanceAfter)을 처음부터 다시 계산하고 영속 저장소에 반영합니다.
   Future<void> recalculateAllBalances() async {
     final sorted = [..._records]
       ..sort((a, b) => a.date.compareTo(b.date));
@@ -186,6 +149,7 @@ class PointViewModel extends ChangeNotifier {
     await _saveRecords();
   }
 
+  /// 기록된 잔액들 중 오류가 있는지 검증합니다.
   List<String> validateBalances() {
     final issues = <String>[];
     final sorted = [..._records]
@@ -200,6 +164,15 @@ class PointViewModel extends ChangeNotifier {
         expected -= r.amount;
       }
       if ((r.balanceAfter - expected).abs() > 0.01) {
+        issues.add(
+          '거래 #${i + 1} (${r.reason}): 잔액 불일치 (예상: ${expected.toStringAsFixed(0)}원, 실제: ${r.balanceAfter.toStringAsFixed(0)}원)',
+        );
+      }
+    }
+    return issues;
+  }
+}
+) {
         issues.add(
           '거래 #${i + 1} (${r.reason}): 잔액 불일치 (예상: ${expected.toStringAsFixed(0)}원, 실제: ${r.balanceAfter.toStringAsFixed(0)}원)',
         );

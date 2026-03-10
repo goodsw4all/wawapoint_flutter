@@ -10,26 +10,38 @@ import 'history_screen.dart';
 import 'settings_screen.dart';
 import 'transaction_form_screen.dart';
 
-class DashboardScreen extends StatefulWidget {
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import '../models/point_record.dart';
+import '../viewmodels/point_view_model.dart';
+import '../viewmodels/dashboard_view_model.dart';
+import '../utils/point_manager.dart';
+import '../utils/app_theme.dart';
+import 'history_screen.dart';
+import 'settings_screen.dart';
+import 'transaction_form_screen.dart';
+
+/// 앱의 메인 화면으로, 잔액 확인 및 주요 기능(수입/지출 입력)에 접근할 수 있습니다.
+class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
   @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
+  Widget build(BuildContext context) {
+    // DashboardViewModel을 화면 범위의 Provider로 주입
+    return ChangeNotifierProvider(
+      create: (_) => DashboardViewModel(
+        pointViewModel: context.read<PointViewModel>(),
+      ),
+      child: const _DashboardView(),
+    );
+  }
 }
 
-class _DashboardScreenState extends State<DashboardScreen>
-    with SingleTickerProviderStateMixin {
-  double _balanceScale = 1.0;
-  double _prevBalance = 0.0;
+class _DashboardView extends StatelessWidget {
+  const _DashboardView();
 
-  void _animateBalance() {
-    setState(() => _balanceScale = 1.1);
-    Future.delayed(const Duration(milliseconds: 200), () {
-      if (mounted) setState(() => _balanceScale = 1.0);
-    });
-  }
-
-  void _openForm(TransactionType type) {
+  void _openForm(BuildContext context, TransactionType type) {
     HapticFeedback.mediumImpact();
     showModalBottomSheet(
       context: context,
@@ -42,13 +54,10 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<PointViewModel>(
-      builder: (context, vm, _) {
-        if (vm.currentBalance != _prevBalance) {
-          _prevBalance = vm.currentBalance;
-          WidgetsBinding.instance
-              .addPostFrameCallback((_) => _animateBalance());
-        }
+    return Consumer2<PointViewModel, DashboardViewModel>(
+      builder: (context, pointVm, dashboardVm, _) {
+        // 잔액 변화에 따른 애니메이션 트리거 (ViewModel에서 처리)
+        dashboardVm.checkAndTriggerAnimation();
 
         return Scaffold(
           backgroundColor: AppColors.background,
@@ -81,7 +90,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                           child: Container(
                             width: 44,
                             height: 44,
-                            decoration: BoxDecoration(
+                            decoration: const BoxDecoration(
                               color: AppColors.cardDarkElevated,
                               shape: BoxShape.circle,
                             ),
@@ -101,11 +110,14 @@ class _DashboardScreenState extends State<DashboardScreen>
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
                       const SizedBox(height: 16),
-                      _BalanceCard(scale: _balanceScale, vm: vm),
+                      _BalanceCard(
+                        scale: dashboardVm.balanceScale,
+                        vm: pointVm,
+                      ),
                       const SizedBox(height: 24),
-                      _ActionButtons(onTap: _openForm),
+                      _ActionButtons(onTap: (type) => _openForm(context, type)),
                       const SizedBox(height: 28),
-                      _RecentTransactions(vm: vm),
+                      _RecentTransactions(vm: pointVm),
                       const SizedBox(height: 32),
                     ]),
                   ),

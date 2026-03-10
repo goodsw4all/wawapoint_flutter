@@ -58,8 +58,15 @@ graph TB
 
     subgraph "🧠 ViewModel Layer"
         PVM[PointViewModel]
+        DVM[DashboardViewModel]
+        HVM[HistoryViewModel]
+        TFVM[TransactionFormViewModel]
         BVM[BackupViewModel]
         SVM[SettingsViewModel]
+    end
+
+    subgraph "🧱 Repository Layer"
+        PRR[PointRepository]
     end
 
     subgraph "⚙️ Service / Utils Layer"
@@ -76,34 +83,30 @@ graph TB
 
     subgraph "📦 Model Layer"
         PR[PointRecord]
-        BD[BackupData]
         TT[TransactionType]
     end
 
-    DS --> PVM
-    HS --> PVM
-    TFS --> PVM
+    DS --> DVM
+    HS --> HVM
+    TFS --> TFVM
     ETS --> PVM
-    SS --> PVM
     SS --> BVM
     SS --> SVM
 
-    PVM --> PM
-    PVM --> RDB
-    PVM --> PR
-
+    DVM --> PVM
+    HVM --> PVM
+    TFVM --> PVM
     BVM --> PVM
-    BVM --> BM
-    BVM --> RDB
+
+    PVM --> PRR
+    PRR --> RDB
+    PRR --> FS
 
     SVM --> PM
-
     PM --> SP
+    
+    BVM --> BM
     BM --> FS
-    BM --> PR
-    BM --> BD
-
-    RDB --> PR
 
     style DS fill:#1a1a2e,stroke:#BB44FF,color:#fff
     style HS fill:#1a1a2e,stroke:#BB44FF,color:#fff
@@ -111,8 +114,12 @@ graph TB
     style TFS fill:#1a1a2e,stroke:#BB44FF,color:#fff
     style ETS fill:#1a1a2e,stroke:#BB44FF,color:#fff
     style PVM fill:#2d1b69,stroke:#BB44FF,color:#fff
+    style DVM fill:#2d1b69,stroke:#BB44FF,color:#fff
+    style HVM fill:#2d1b69,stroke:#BB44FF,color:#fff
+    style TFVM fill:#2d1b69,stroke:#BB44FF,color:#fff
     style BVM fill:#2d1b69,stroke:#BB44FF,color:#fff
     style SVM fill:#2d1b69,stroke:#BB44FF,color:#fff
+    style PRR fill:#4a4a8a,stroke:#BB44FF,color:#fff
     style PM fill:#1b3a4b,stroke:#5AC8FA,color:#fff
     style BM fill:#1b3a4b,stroke:#5AC8FA,color:#fff
     style AT fill:#1b3a4b,stroke:#5AC8FA,color:#fff
@@ -120,7 +127,6 @@ graph TB
     style SP fill:#1b2e1b,stroke:#34C759,color:#fff
     style FS fill:#1b2e1b,stroke:#34C759,color:#fff
     style PR fill:#3a1b1b,stroke:#FF9500,color:#fff
-    style BD fill:#3a1b1b,stroke:#FF9500,color:#fff
     style TT fill:#3a1b1b,stroke:#FF9500,color:#fff
 ```
 
@@ -133,21 +139,26 @@ lib/
 ├── main.dart                          # 앱 진입점, Provider 등록, 테마 설정
 ├── models/
 │   └── point_record.dart              # 데이터 모델 (PointRecord, TransactionType)
+├── repositories/
+│   └── point_repository.dart          # 데이터 영속성 추상화 (SQLite + File Migration)
 ├── viewmodels/
-│   ├── point_view_model.dart          # 핵심 거래 CRUD ViewModel
+│   ├── point_view_model.dart          # 핵심 상태 관리 (잔액, 전체 기록)
+│   ├── dashboard_view_model.dart      # 대시보드 UI 상태 및 애니메이션
+│   ├── history_view_model.dart        # 히스토리 필터링 및 차트 데이터 가공
+│   ├── transaction_form_view_model.dart # 입력 폼 검증 및 저장 로직
 │   ├── backup_view_model.dart         # 백업/복원/삭제 ViewModel
 │   └── settings_view_model.dart       # 설정(환산율) ViewModel
 ├── screens/
-│   ├── dashboard_screen.dart          # 메인 대시보드 (잔액, 액션 버튼, 최근 기록)
+│   ├── dashboard_screen.dart          # 메인 대시보드
 │   ├── history_screen.dart            # 전체 거래 내역 + 차트
 │   ├── settings_screen.dart           # 설정 화면
-│   ├── transaction_form_screen.dart   # 수입/지출 입력 폼 (Bottom Sheet)
+│   ├── transaction_form_screen.dart   # 수입/지출 입력 폼
 │   └── edit_transaction_screen.dart   # 기존 거래 수정 화면
 └── utils/
-    ├── app_theme.dart                 # 디자인 시스템 (색상, 그라데이션, 데코레이션)
-    ├── point_manager.dart             # 포인트↔원화 변환 유틸 (Singleton)
-    ├── backup_manager.dart            # JSON 백업 직렬화/역직렬화 (Singleton)
-    └── record_database.dart           # SQLite CRUD 래퍼 (Singleton)
+    ├── app_theme.dart                 # 디자인 시스템
+    ├── point_manager.dart             # 포인트↔원화 변환 유틸
+    ├── backup_manager.dart            # JSON 백업 직렬화/역직렬화
+    └── record_database.dart           # SQLite 래퍼
 ```
 
 ---
@@ -157,31 +168,34 @@ lib/
 ```mermaid
 graph LR
     subgraph "View"
-        V1["Widget<br/>(StatefulWidget)"]
+        V1["Widget<br/>(Stateless/Stateful)"]
     end
 
     subgraph "ViewModel"
-        VM1["ChangeNotifier<br/>(비즈니스 로직)"]
+        VM1["Screen-specific VM<br/>(UI Logic)"]
+        VM2["PointViewModel<br/>(Global State)"]
     end
 
-    subgraph "Model"
-        M1["PointRecord<br/>(데이터 객체)"]
+    subgraph "Repository"
+        R1["PointRepository<br/>(Persistence Logic)"]
     end
 
-    subgraph "Service"
+    subgraph "Data / Service"
         S1["RecordDatabase<br/>PointManager<br/>BackupManager"]
     end
 
-    V1 -- "Consumer / context.read" --> VM1
-    VM1 -- "notifyListeners()" --> V1
-    VM1 -- "CRUD 요청" --> S1
-    S1 -- "데이터 반환" --> VM1
-    VM1 -- "상태 보유" --> M1
-    S1 -- "직렬화/역직렬화" --> M1
+    V1 -- "Provider" --> VM1
+    VM1 -- "dependency" --> VM2
+    VM2 -- "CRUD 요청" --> R1
+    R1 -- "DB/File 접근" --> S1
+    S1 -- "데이터 반환" --> R1
+    R1 -- "마이그레이션/조합" --> VM2
+    VM2 -- "notifyListeners()" --> V1
 
     style V1 fill:#1a1a2e,stroke:#BB44FF,color:#fff
     style VM1 fill:#2d1b69,stroke:#BB44FF,color:#fff
-    style M1 fill:#3a1b1b,stroke:#FF9500,color:#fff
+    style VM2 fill:#2d1b69,stroke:#BB44FF,color:#fff
+    style R1 fill:#4a4a8a,stroke:#BB44FF,color:#fff
     style S1 fill:#1b3a4b,stroke:#5AC8FA,color:#fff
 ```
 
@@ -189,10 +203,11 @@ graph LR
 
 | 계층 | 책임 | 금지 사항 |
 |------|------|-----------|
-| **View** | UI 렌더링, 사용자 입력 수신, ViewModel 호출 | 비즈니스 로직, DB 직접 접근 |
-| **ViewModel** | 상태 관리, 비즈니스 로직, View에 데이터 노출 | UI 코드(`BuildContext` 보유 금지) |
-| **Model** | 데이터 구조 정의, 직렬화/역직렬화 | 로직, 상태 변경 알림 |
-| **Service/Utils** | 인프라 접근 (DB, SharedPrefs, 파일시스템) | UI, 상태 관리 |
+| **View** | UI 렌더링, 사용자 입력 수신, ViewModel 호출 | 비즈니스 로직, 직접적인 데이터 가공 |
+| **ViewModel** | UI 상태 및 비즈니스 로직 관리, 데이터 바인딩 | UI 코드(`BuildContext` 보유 금지), 데이터 저장소 직접 접근 |
+| **Repository** | 데이터 출처(SQLite, File) 관리 및 마이그레이션 | UI 상태 관리, 복잡한 비즈니스 로직 |
+| **Model** | 데이터 구조 정의, 직렬화/역직렬화 | 로직 포함, 상태 변경 알림 |
+| **Service/Utils** | 로우레벨 인프라 접근 (DB 엔진, 유틸리티) | 상태 관리, 업무 도메인 로직 |
 
 ---
 
@@ -203,24 +218,24 @@ graph LR
 ```mermaid
 sequenceDiagram
     actor User
-    participant TFS as TransactionFormScreen
+    participant V as TransactionFormView
+    participant VM as TransactionFormViewModel
     participant PVM as PointViewModel
-    participant PM as PointManager
-    participant RDB as RecordDatabase
+    participant R as PointRepository
     
-    User->>TFS: 포인트 수량 + 사유 입력
-    TFS->>TFS: _isValid 검증
-    TFS->>PVM: addPointIncome(points, reason)
-    PVM->>PM: pointsToKRW(amount)
-    PM-->>PVM: KRW 환산값
-    PVM->>PVM: newBalance 계산
-    PVM->>PVM: PointRecord 생성 (UUID)
-    PVM->>PVM: _records.insert(0, record)
+    User->>V: 포인트 수량 + 사유 입력
+    V->>VM: setAmount(v), setReason(r)
+    VM->>VM: isValid 체크
+    User->>V: 저장 버튼 클릭
+    V->>VM: save()
+    VM->>PVM: addPointIncome(amount, reason)
+    PVM->>R: addRecord(record)
+    R->>R: SQLite Insert
+    R-->>PVM: Completion
     PVM->>PVM: notifyListeners()
-    PVM-->>TFS: UI 자동 갱신
-    PVM->>RDB: clearAll() + insertRecord() × N
-    RDB-->>PVM: 저장 완료
-    TFS->>User: Navigator.pop() (폼 닫기)
+    PVM-->>V: UI 자동 갱신
+    VM-->>V: return true
+    V->>User: Navigator.pop()
 ```
 
 ### 5.2 지출 기록 흐름
@@ -228,24 +243,27 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     actor User
-    participant TFS as TransactionFormScreen
+    participant V as TransactionFormView
+    participant VM as TransactionFormViewModel
     participant PVM as PointViewModel
-    participant PM as PointManager
+    participant R as PointRepository
 
-    User->>TFS: 금액(원) + 사유 입력
-    TFS->>PVM: addExpense(krw, reason)
-    PVM->>PM: canAfford(balance, krw)
+    User->>V: 금액(원) + 사유 입력
+    V->>VM: save()
+    VM->>PVM: addExpense(amount, reason)
+    PVM->>PVM: canAfford 체크
     
-    alt 잔액 부족
-        PM-->>PVM: false
-        PVM-->>TFS: return false
-        TFS->>User: "잔액이 부족합니다" 다이얼로그
-    else 잔액 충분
-        PM-->>PVM: true
-        PVM->>PVM: PointRecord 생성
+    alt 잔액 충분
+        PVM->>R: addRecord(record)
+        R-->>PVM: Success
         PVM->>PVM: notifyListeners()
-        PVM-->>TFS: return true
-        TFS->>User: 성공, 폼 닫기
+        PVM-->>VM: return true
+        VM-->>V: return true
+        V->>User: 성공 알림 + 닫기
+    else 잔액 부족
+        PVM-->>VM: return false
+        VM-->>V: return false
+        V->>User: "잔액이 부족합니다" 경고
     end
 ```
 
@@ -384,102 +402,77 @@ classDiagram
 ```mermaid
 classDiagram
     class PointViewModel {
+        -PointRepository _repository
         -List~PointRecord~ _records
         -double _currentBalance
         +List~PointRecord~ records
         +double currentBalance
         +String formattedBalance
-        +String formattedPoints
-        +double currentPoints
         +loadRecords() Future~void~
         +addPointIncome(int, String) Future~void~
         +addExpense(double, String) Future~bool~
         +deleteRecord(PointRecord) Future~void~
         +updateRecord(PointRecord, double, String) Future~void~
-        +recalculateAllBalances() Future~void~
-        +validateBalances() List~String~
-        -_saveRecords() Future~void~
-        -_calculateBalance() void
-        -_getLegacyDataFile() Future~File~
     }
 
-    class BackupViewModel {
+    class HistoryViewModel {
         -PointViewModel _pointViewModel
-        +exportBackup() Future~File~
-        +importBackup(String) Future~int~
-        +clearAllData() Future~void~
+        +TimePeriod selectedPeriod
+        +List~PointRecord~ filteredRecords
+        +groupExpensesByDay() Map
     }
 
-    class SettingsViewModel {
-        -double _pointRate
-        +double pointRate
-        +String formattedRate
-        +load() Future~void~
-        +setRate(double) Future~bool~
+    class TransactionFormViewModel {
+        -PointViewModel _pointViewModel
+        +String amount
+        +String reason
+        +bool isValid
+        +save() Future~bool~
+    }
+
+    class DashboardViewModel {
+        -PointViewModel _pointViewModel
+        +double balanceScale
+        +checkAndTriggerAnimation() bool
     }
 
     PointViewModel <|-- ChangeNotifier
-    BackupViewModel <|-- ChangeNotifier
-    SettingsViewModel <|-- ChangeNotifier
+    HistoryViewModel <|-- ChangeNotifier
+    TransactionFormViewModel <|-- ChangeNotifier
+    DashboardViewModel <|-- ChangeNotifier
 
-    BackupViewModel --> PointViewModel : _pointViewModel
-    PointViewModel --> PointManager : 환산 로직
-    PointViewModel --> RecordDatabase : 데이터 영속성
-    BackupViewModel --> BackupManager : 직렬화
-    BackupViewModel --> RecordDatabase : DB 직접 접근
-    SettingsViewModel --> PointManager : 환산율 관리
+    HistoryViewModel --> PointViewModel
+    TransactionFormViewModel --> PointViewModel
+    DashboardViewModel --> PointViewModel
+    PointViewModel --> PointRepository
 ```
 
-### 7.2 PointViewModel — 핵심 거래 관리
+### 7.2 PointViewModel — 전역 상태 관리
 
-**파일**: `lib/viewmodels/point_view_model.dart`
+거래 데이터의 원본(Single Source of Truth)과 전체 잔액을 관리합니다. 모든 데이터 변경 요청은 최종적으로 이 ViewModel을 통해 처리됩니다.
 
-거래 데이터의 CRUD 및 잔액 관리를 담당하는 메인 ViewModel입니다.
+### 7.3 Screen-specific ViewModels
 
-#### 주요 책임
+각 화면의 복잡한 UI 로직과 일시적인 상태를 관리합니다.
+- **HistoryViewModel**: 필터링, 통계, 차트 데이터 가공
+- **TransactionFormViewModel**: 입력 폼 상태, 유효성 검사, 저장 프로세스
+- **DashboardViewModel**: 애니메이션 트리거, 대시보드 전용 시각적 상태
 
-| 메서드 | 반환 | 설명 |
-|--------|------|------|
-| `loadRecords()` | `void` | SQLite에서 전체 기록 로드. DB 비어있으면 레거시 JSON 파일에서 마이그레이션 시도 |
-| `addPointIncome(points, reason)` | `void` | 포인트 수입 기록 추가. 포인트→KRW 환산 후 잔액에 반영 |
-| `addExpense(krw, reason)` | `bool` | 원화 지출 기록. 잔액 부족 시 `false` 반환 |
-| `deleteRecord(record)` | `void` | 거래 삭제 후 전체 잔액 재계산 |
-| `updateRecord(record, amount, reason)` | `void` | 금액/사유 수정 후 전체 잔액 재계산 |
-| `recalculateAllBalances()` | `void` | 시간순 정렬 후 처음부터 잔액 재계산 (무결성 복구) |
-| `validateBalances()` | `List<String>` | 잔액 불일치 검증, 이슈 목록 반환 |
+---
 
-#### 읽기 전용 프로퍼티
+## 8. Repository 계층
 
-| 프로퍼티 | 타입 | 설명 |
-|----------|------|------|
-| `records` | `List<PointRecord>` | 불변 기록 리스트 (`List.unmodifiable`) |
-| `currentBalance` | `double` | 현재 잔액 (원화) |
-| `formattedBalance` | `String` | 포맷된 잔액 (예: `"12,500원"`) |
-| `formattedPoints` | `String` | 포맷된 포인트 (예: `"5 P"`) |
-| `currentPoints` | `double` | 현재 잔액의 포인트 환산값 |
+### 8.1 PointRepository
 
-#### 데이터 마이그레이션 전략
+**파일**: `lib/repositories/point_repository.dart`
 
-```mermaid
-flowchart TD
-    A[loadRecords 호출] --> B[PointManager.load]
-    B --> C{SQLite DB에<br/>레코드 있음?}
-    C -->|Yes| D[DB 데이터 로드]
-    D --> E[_calculateBalance]
-    E --> F[notifyListeners]
-    C -->|No| G{레거시 JSON<br/>파일 존재?}
-    G -->|Yes| H[JSON 파싱]
-    H --> I[SQLite에 저장]
-    I --> J[레거시 파일 삭제]
-    J --> F
-    G -->|No| K[빈 상태 유지]
-    K --> F
+데이터의 영속성(Persistence)을 전담하며, 다양한 데이터 소스 간의 중재자 역할을 합니다.
 
-    style A fill:#2d1b69,stroke:#BB44FF,color:#fff
-    style C fill:#1b3a4b,stroke:#5AC8FA,color:#fff
-    style G fill:#1b3a4b,stroke:#5AC8FA,color:#fff
-    style F fill:#1b2e1b,stroke:#34C759,color:#fff
-```
+| 책임 | 설명 |
+|------|------|
+| **추상화** | ViewModel이 SQLite나 File System에 직접 접근하지 않도록 격리 |
+| **마이그레이션** | 앱 초기 실행 시 레거시 JSON 데이터를 SQLite로 자동 이관 |
+| **무결성** | 데이터 저장/읽기 시 형식 검증 및 일관성 유지 |
 
 ### 7.3 BackupViewModel — 백업/복원
 
@@ -711,46 +704,27 @@ graph TD
 classDiagram
     class RecordDatabase {
         <<Singleton>>
-        -Database? _database
-        +RecordDatabase instance$
-        +Future~Database~ database
         +getAllRecords() Future~List~
         +insertRecord(PointRecord) Future~int~
         +updateRecord(PointRecord) Future~int~
         +deleteRecord(String) Future~int~
         +clearAll() Future~int~
-        +close() Future~void~
-        -_initDB(String) Future~Database~
-        -_createDB(Database, int) FutureOr~void~
+    }
+
+    class PointRepository {
+        -RecordDatabase _db
+        +getAllRecords() Future~List~
+        +overwriteAllRecords(List) Future~void~
     }
 
     class PointManager {
         <<Singleton>>
-        -double _pointToKRWRate
-        +double pointToKRWRate
-        +load() Future~void~
-        +setRate(double) Future~void~
         +pointsToKRW(double) double
         +krwToPoints(double) double
-        +canAfford(double, double) bool
-        +formatKRW(double) String
-        +formatPoints(double) String
     }
 
-    class BackupManager {
-        <<Singleton>>
-        +generateFileName() String
-        +exportToJson(List) String
-        +saveToDocuments(String, String) Future~File~
-        +validateBackupData(String) Record
-        +importFromJson(String) List~PointRecord~
-    }
-
-    RecordDatabase --> PointRecord : CRUD
-    BackupManager --> PointRecord : 직렬화
-    BackupManager --> BackupData : wrapper
-    PointManager --> SharedPreferences : 환산율 저장
-    RecordDatabase --> sqflite : DB 엔진
+    PointRepository --> RecordDatabase
+    PointRepository --> PointManager
 ```
 
 ### 9.2 RecordDatabase — SQLite 래퍼
@@ -940,37 +914,38 @@ graph TD
     MP --> SVM_P["ChangeNotifierProvider<br/>SettingsViewModel"]
     MP --> BVM_P["ChangeNotifierProxyProvider<br/>BackupViewModel"]
 
-    PVM_P --> PVM["PointViewModel<br/>..loadRecords()"]
-    SVM_P --> SVM["SettingsViewModel<br/>..load()"]
+    PVM_P --> PVM["PointViewModel"]
+    SVM_P --> SVM["SettingsViewModel"]
     BVM_P --> BVM["BackupViewModel"]
-    BVM_P -.->|"의존"| PVM
 
-    PVM --> DS["DashboardScreen<br/>Consumer"]
-    PVM --> HS["HistoryScreen<br/>Consumer"]
-    PVM --> TFS["TransactionFormScreen<br/>context.read + Consumer"]
-    PVM --> ETS["EditTransactionScreen<br/>context.read"]
-    PVM --> SS_P["SettingsScreen<br/>context.watch"]
+    subgraph "Screen-specific Providers"
+        DS_P["ChangeNotifierProvider<br/>DashboardViewModel"]
+        HS_P["ChangeNotifierProvider<br/>HistoryViewModel"]
+        TF_P["ChangeNotifierProvider<br/>TransactionFormViewModel"]
+    end
 
-    BVM --> SS_B["SettingsScreen<br/>context.read"]
-    SVM --> SS_S["SettingsScreen<br/>context.read"]
+    PVM --> DS_P
+    PVM --> HS_P
+    PVM --> TF_P
+
+    DS_P --> DS[DashboardScreen]
+    HS_P --> HS[HistoryScreen]
+    TF_P --> TF[TransactionFormScreen]
 
     style MP fill:#1a1a2e,stroke:#BB44FF,color:#fff
     style PVM fill:#2d1b69,stroke:#BB44FF,color:#fff
-    style BVM fill:#2d1b69,stroke:#BB44FF,color:#fff
-    style SVM fill:#2d1b69,stroke:#BB44FF,color:#fff
-    style DS fill:#1b3a4b,stroke:#5AC8FA,color:#fff
-    style HS fill:#1b3a4b,stroke:#5AC8FA,color:#fff
-    style TFS fill:#1b3a4b,stroke:#5AC8FA,color:#fff
-    style ETS fill:#1b3a4b,stroke:#5AC8FA,color:#fff
+    style DS_P fill:#4a4a8a,stroke:#BB44FF,color:#fff
+    style HS_P fill:#4a4a8a,stroke:#BB44FF,color:#fff
+    style TF_P fill:#4a4a8a,stroke:#BB44FF,color:#fff
 ```
 
 ### Provider 접근 패턴 요약
 
 | 패턴 | 용도 | 사용처 |
 |------|------|--------|
-| `Consumer<T>` | 위젯 리빌드 필요 시 | Dashboard, History, TransactionForm(중첩) |
-| `context.watch<T>()` | build 내 반응형 읽기 | Settings(PointViewModel) |
-| `context.read<T>()` | 이벤트 핸들러에서 1회 읽기 | TransactionForm, EditTransaction, Settings |
+| `Consumer<T>` | 위젯 리빌드 필요 시 | 전 과정 (Dashboard, History 등) |
+| `ChangeNotifierProvider` | 화면 진입 시 전용 VM 생성 | Dashboard, History, TransactionForm |
+| `context.read<T>()` | 이벤트 핸들러에서 1회 읽기 | 데이터 저장, 화면 전환 등 |
 
 ---
 
@@ -980,38 +955,33 @@ graph TD
 graph TB
     subgraph "영속성 계층"
         direction TB
-        L1["🔄 In-Memory<br/>List&lt;PointRecord&gt; in PointViewModel"]
+        L1["🧠 In-Memory List<br/>PointViewModel"]
+        LR["🧱 PointRepository<br/>Data Mediator"]
         L2["💾 SQLite<br/>wawapoint.db"]
-        L3["📋 SharedPreferences<br/>pointToKRWRate"]
-        L4["📁 File System<br/>JSON 백업 파일"]
-        L5["📦 Legacy JSON<br/>(마이그레이션 후 삭제)"]
+        L3["📋 SharedPreferences<br/>Settings"]
+        L4["📁 JSON Backup"]
     end
 
-    L1 -->|"_saveRecords()"| L2
-    L2 -->|"loadRecords()"| L1
-    L3 -->|"PointManager.load()"| L1
-    L1 -->|"exportBackup()"| L4
-    L4 -->|"importBackup()"| L2
-    L5 -->|"자동 마이그레이션"| L2
-    L5 -->|"마이그레이션 완료 시"| X["🗑️ 삭제"]
+    L1 --> LR
+    LR --> L2
+    LR --> L4
+    L3 -->|"PointManager"| L1
 
     style L1 fill:#2d1b69,stroke:#BB44FF,color:#fff
+    style LR fill:#4a4a8a,stroke:#BB44FF,color:#fff
     style L2 fill:#1b2e1b,stroke:#34C759,color:#fff
     style L3 fill:#1b2e1b,stroke:#34C759,color:#fff
     style L4 fill:#1b3a4b,stroke:#5AC8FA,color:#fff
-    style L5 fill:#3a1b1b,stroke:#FF9500,color:#fff
-    style X fill:#3a1b1b,stroke:#FF3B30,color:#fff
 ```
 
 ### 저장소별 역할
 
 | 저장소 | 용도 | 데이터 |
 |--------|------|--------|
-| **In-Memory** | 실시간 상태 관리, UI 바인딩 | `List<PointRecord>`, `currentBalance` |
-| **SQLite** | 주 데이터 저장소 (authoritative source) | 전체 거래 기록 |
-| **SharedPreferences** | 경량 설정값 저장 | 포인트 환산율 |
-| **File System** | 사용자 요청 시 백업 파일 저장 | JSON 백업 |
-| **Legacy JSON** | v1 마이그레이션 전용 (1회 실행 후 삭제) | 이전 버전 데이터 |
+| **In-Memory** | 실시간 상태 관리 | `List<PointRecord>`, `currentBalance` |
+| **PointRepository** | 데이터 접근 추상화 | 데이터 결합 및 마이그레이션 로직 |
+| **SQLite** | 메인 영속성 저장소 | 전체 거래 기록 |
+| **SharedPreferences** | 설정값 저장 | 포인트 환산율 |
 
 ---
 
@@ -1133,28 +1103,30 @@ stateDiagram-v2
 
 ```mermaid
 graph LR
-    subgraph "분리 전"
-        OLD[PointViewModel<br/>거래 CRUD + 백업 + 설정<br/>~230줄]
+    subgraph "기존 구조"
+        OLD[PointViewModel<br/>전체 로직 집중]
     end
 
-    subgraph "분리 후"
-        PVM2["PointViewModel<br/>거래 CRUD<br/>~190줄"]
-        BVM2["BackupViewModel<br/>백업/복원/삭제<br/>~40줄"]
-        SVM2["SettingsViewModel<br/>환산율 관리<br/>~25줄"]
+    subgraph "개선된 MVVM-Repository"
+        REPO[PointRepository]
+        PVM2[PointViewModel]
+        SVMX[Screen VMs]
     end
 
-    OLD -->|"SRP 원칙 적용"| PVM2
-    OLD -->|"SRP 원칙 적용"| BVM2
-    OLD -->|"SRP 원칙 적용"| SVM2
+    OLD -->|"계층 분리"| REPO
+    OLD -->|"글로벌 상태"| PVM2
+    OLD -->|"화면 로직"| SVMX
 
     style OLD fill:#3a1b1b,stroke:#FF3B30,color:#fff
+    style REPO fill:#4a4a8a,stroke:#BB44FF,color:#fff
     style PVM2 fill:#2d1b69,stroke:#BB44FF,color:#fff
-    style BVM2 fill:#1b3a4b,stroke:#5AC8FA,color:#fff
-    style SVM2 fill:#1b2e1b,stroke:#34C759,color:#fff
 ```
 
-| ViewModel | 단일 책임 | 사용 화면 |
-|-----------|-----------|-----------|
-| `PointViewModel` | 거래 CRUD, 잔액 관리, 데이터 무결성 | Dashboard, History, TransactionForm, EditTransaction |
-| `BackupViewModel` | 데이터 내보내기/가져오기, 전체 삭제 | Settings |
-| `SettingsViewModel` | 포인트 환산율 설정 | Settings |
+| ViewModel | 주요 역할 |
+|-----------|-----------|
+| `PointViewModel` | 앱 전역 데이터 및 잔액 상태 관리 |
+| `HistoryViewModel` | 이력 조회 및 통계/차트 로직 |
+| `TransactionFormViewModel` | 신규 거래 입력 및 유효성 검사 |
+| `DashboardViewModel` | 대시보드 전용 UI 효과 관리 |
+| `BackupViewModel` | 데이터 내보내기/가져오기 프로세스 |
+| `SettingsViewModel` | 앱 설정 및 환경 변수 관리 |
