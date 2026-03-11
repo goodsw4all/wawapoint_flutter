@@ -5,6 +5,8 @@
 > **아키텍처 패턴**: MVVM (Model-View-ViewModel)  
 > **상태 관리**: Provider (ChangeNotifier)
 
+개발자 학습 가이드(Onboarding)는 **[LEARNING_GUIDE.md](LEARNING_GUIDE.md)** 문서를 참조하세요.
+
 ---
 
 ## 목차
@@ -17,7 +19,7 @@
 6. [Model 계층](#6-model-계층)
 7. [ViewModel 계층](#7-viewmodel-계층)
 8. [View 계층 (Screens)](#8-view-계층-screens)
-9. [Utils / Service 계층](#9-utils--service-계층)
+9. [Data / Service 계층](#9-data--service-계층)
 10. [디자인 시스템](#10-디자인-시스템)
 11. [Provider 의존성 그래프](#11-provider-의존성-그래프)
 12. [데이터 영속성 전략](#12-데이터-영속성-전략)
@@ -54,9 +56,10 @@ graph TB
         SS[SettingsScreen]
         TFS[TransactionFormScreen]
         ETS[EditTransactionScreen]
+        AT[AppTheme]
     end
 
-    subgraph "🧠 ViewModel Layer"
+    subgraph "🧠 ViewModel Layer (Providers)"
         PVM[PointViewModel]
         DVM[DashboardViewModel]
         HVM[HistoryViewModel]
@@ -69,13 +72,9 @@ graph TB
         PRR[PointRepository]
     end
 
-    subgraph "⚙️ Service / Utils Layer"
+    subgraph "💾 Data Layer (Utils)"
         PM[PointManager]
         BM[BackupManager]
-        AT[AppTheme]
-    end
-
-    subgraph "💾 Data Layer"
         RDB[(RecordDatabase<br/>SQLite)]
         SP[(SharedPreferences)]
         FS[(File System<br/>JSON Backup)]
@@ -700,7 +699,7 @@ graph TD
 
 ---
 
-## 9. Utils / Service 계층
+## 9. Data / Service 계층
 
 ### 9.1 전체 서비스 구조
 

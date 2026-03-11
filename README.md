@@ -1,37 +1,44 @@
-# wawapoint
+# WaWa Point (와와포인트) 🪙
 
-A new Flutter project.
+포인트 적립 및 사용 내역을 편리하게 관리하고 시각화하는 Flutter 기반의 개인 재무 관리 도구입니다.
 
-## Getting Started
+## 🚀 주요 문서 및 가이드
 
-This project is a starting point for a Flutter application.
+새로 합류하신 개발자분들은 다음 문서를 먼저 확인해 주세요:
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+1.  **[ARCHITECTURE.md](docs/ARCHITECTURE.md)**: 전체 아키텍처(MVVM-Repository), 데이터 영속성 전략, 레이어별 상세 설계 등을 다룹니다.
+2.  **[LEARNING_GUIDE.md](docs/LEARNING_GUIDE.md)**: Flutter 입문자 또는 복귀 개발자를 위한 워크플로우, 핵심 개념, 위젯 코드 분석 가이드입니다.
 
 ---
 
-## Migration to SQLite
+## 🏗️ 프로젝트 구조
 
-Historical versions of the app stored records in a plain JSON file (`wawapoint_records.json`) alongside an export/backup feature that produced the same JSON format. Recent releases now persist data in a local SQLite database using `sqflite`.
+이 프로젝트는 표준 `lib/src` 구조를 따르며 관심사가 엄격히 분리되어 있습니다.
 
-To upgrade existing users:
+- `src/constants`: 공통 상수 및 설정
+- `src/data`: DB(SQLite), 파일 입출력 로직
+- `src/models`: 데이터 모델 (Entity)
+- `src/providers`: 상태 관리 및 비즈니스 로직 (ViewModel)
+- `src/repositories`: 데이터 접근 추상화 레이어
+- `src/ui`: 위젯 및 화면 (View)
 
-1. **Automatic migration** occurs when the database is opened for the first time and the legacy JSON file still exists. The file is read, all records are inserted into the new database, and the JSON file is deleted.
-2. **Manual migration** is possible by using the "복원" (restore) button on the settings screen: pick any previously exported `.json` backup and the app will import its contents into SQLite automatically.
+---
 
-The `PointViewModel` and `RecordDatabase` classes provide the necessary APIs; developers can also call
+## 💾 Migration to SQLite
 
-```dart
-final text = await File('path/to/backup.json').readAsString();
-await viewModel.importBackup(text); // inserts into SQLite as well
+이전 버전의 앱은 모든 기록을 일반 JSON 파일(`wawapoint_records.json`)로 저장했습니다. 최신 버전은 `sqflite`를 사용한 로컬 SQLite 데이터베이스로 데이터를 관리합니다.
+
+1.  **자동 마이그레이션**: 앱을 처음 실행할 때 레거시 JSON 파일이 존재하면 자동으로 SQLite로 데이터를 마이그레이션하고 기존 파일을 삭제합니다.
+2.  **수동 마이그레이션**: 설정 화면의 "복원" 버튼을 사용해 이전 백업 JSON 파일을 언제든지 가져올 수 있습니다.
+
+---
+
+## 🛠️ 시작하기
+
+의존성 설치 및 실행:
+```bash
+flutter pub get
+flutter run
 ```
 
-Existing backups are fully compatible with the new storage layer.
+자세한 CLI 명령어는 [LEARNING_GUIDE.md](docs/LEARNING_GUIDE.md#7-자주-사용하는-flutter-cli-명령어)를 참조하세요.
