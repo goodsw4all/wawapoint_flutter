@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../models/point_record.dart';
-import '../utils/point_manager.dart';
+import '../data/point_manager.dart';
 import '../repositories/point_repository.dart';
 
 /// 앱의 전역적인 포인트 상태와 거래 기록을 관리하는 ViewModel입니다.

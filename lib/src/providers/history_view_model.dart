@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../models/point_record.dart';
-import '../utils/point_manager.dart';
+import '../data/point_manager.dart';
 
 enum TimePeriod { week, month, year }
 

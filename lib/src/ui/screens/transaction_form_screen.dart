@@ -270,7 +270,7 @@ class _TransactionFormViewState extends State<_TransactionFormView> {
                                 children: [
                                   Icon(Icons.chat_bubble_rounded,
                                       color: AppColors.textTertiary, size: 18),
-                                  const SizedBox(width: 6),
+                                  SizedBox(width: 6),
                                   Text('사유',
                                       style: TextStyle(
                                           fontWeight: FontWeight.w600,

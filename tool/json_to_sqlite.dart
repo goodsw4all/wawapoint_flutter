@@ -2,7 +2,7 @@
 /// into a SQLite database file (`wawapoint.db`).
 ///
 /// Usage:
-///   dart run tool/json_to_sqlite.dart <path/to/backup.json> [output.db]
+///   dart run tool/json_to_sqlite.dart path/to/backup.json [output.db]
 ///
 /// If [output.db] is omitted, `wawapoint.db` is created in the current
 /// directory.

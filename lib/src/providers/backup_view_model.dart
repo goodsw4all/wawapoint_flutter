@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import '../utils/backup_manager.dart';
-import '../utils/record_database.dart';
+import '../data/backup_manager.dart';
+import '../data/record_database.dart';
 import 'point_view_model.dart';
 
 class BackupViewModel extends ChangeNotifier {

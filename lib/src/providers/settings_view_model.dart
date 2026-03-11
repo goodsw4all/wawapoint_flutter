@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import '../utils/point_manager.dart';
+import '../data/point_manager.dart';
 
 class SettingsViewModel extends ChangeNotifier {
   double _pointRate = 2500.0;

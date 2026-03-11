@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../models/point_record.dart';
-import '../utils/point_manager.dart';
-import '../viewmodels/point_view_model.dart';
+import 'point_view_model.dart';
+import '../data/point_manager.dart';
 
 /// 거래 입력 화면(TransactionFormScreen)의 폼 상태 및 저장 로직을 담당하는 ViewModel입니다.
 class TransactionFormViewModel extends ChangeNotifier {

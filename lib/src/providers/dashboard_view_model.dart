@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import '../viewmodels/point_view_model.dart';
+import 'point_view_model.dart';
 
 /// 대시보드 화면(DashboardScreen)의 시각적 상태와 애니메이션 로직을 담당하는 ViewModel입니다.
 class DashboardViewModel extends ChangeNotifier {
