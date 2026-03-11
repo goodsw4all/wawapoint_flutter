@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../../models/point_record.dart';
 import '../../providers/point_view_model.dart';
 import '../../providers/transaction_form_view_model.dart';
-import '../../data/point_manager.dart';
 import '../app_theme.dart';
 
 /// 거래(수입/지출) 내역을 입력받는 화면입니다.
