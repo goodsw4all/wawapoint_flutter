@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import '../models/point_record.dart';
-import '../utils/record_database.dart';
+import '../data/record_database.dart';
 
 /// [PointRecord] 데이터의 영속성을 관리하는 Repository 클래스입니다.
 /// SQLite 데이터베이스와 레거시 JSON 파일 시스템과의 상호작용을 캡슐화합니다.

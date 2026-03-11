@@ -4,10 +4,10 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:share_plus/share_plus.dart';
-import '../viewmodels/point_view_model.dart';
-import '../viewmodels/backup_view_model.dart';
-import '../viewmodels/settings_view_model.dart';
-import '../utils/app_theme.dart';
+import '../../providers/point_view_model.dart';
+import '../../providers/backup_view_model.dart';
+import '../../providers/settings_view_model.dart';
+import '../app_theme.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});

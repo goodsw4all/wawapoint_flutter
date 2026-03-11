@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'viewmodels/point_view_model.dart';
-import 'viewmodels/backup_view_model.dart';
-import 'viewmodels/settings_view_model.dart';
-import 'screens/dashboard_screen.dart';
-import 'utils/app_theme.dart';
+import 'src/providers/point_view_model.dart';
+import 'src/providers/backup_view_model.dart';
+import 'src/providers/settings_view_model.dart';
+import 'src/ui/screens/dashboard_screen.dart';
+import 'src/ui/app_theme.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();

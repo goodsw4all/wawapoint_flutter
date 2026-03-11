@@ -3,11 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
-import '../models/point_record.dart';
-import '../viewmodels/point_view_model.dart';
-import '../viewmodels/history_view_model.dart';
-import '../utils/point_manager.dart';
-import '../utils/app_theme.dart';
+import '../../models/point_record.dart';
+import '../../providers/point_view_model.dart';
+import '../../providers/history_view_model.dart';
+import '../../data/point_manager.dart';
+import '../app_theme.dart';
 import 'dashboard_screen.dart';
 import 'edit_transaction_screen.dart';
 

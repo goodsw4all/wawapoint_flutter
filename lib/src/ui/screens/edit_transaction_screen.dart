@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import '../models/point_record.dart';
-import '../viewmodels/point_view_model.dart';
-import '../utils/point_manager.dart';
-import '../utils/app_theme.dart';
+import '../../models/point_record.dart';
+import '../../providers/point_view_model.dart';
+import '../../data/point_manager.dart';
+import '../app_theme.dart';
 
 class EditTransactionScreen extends StatefulWidget {
   final PointRecord record;
