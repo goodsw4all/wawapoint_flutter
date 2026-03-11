@@ -137,28 +137,31 @@ graph TB
 ```
 lib/
 ├── main.dart                          # 앱 진입점, Provider 등록, 테마 설정
-├── models/
-│   └── point_record.dart              # 데이터 모델 (PointRecord, TransactionType)
-├── repositories/
-│   └── point_repository.dart          # 데이터 영속성 추상화 (SQLite + File Migration)
-├── viewmodels/
-│   ├── point_view_model.dart          # 핵심 상태 관리 (잔액, 전체 기록)
-│   ├── dashboard_view_model.dart      # 대시보드 UI 상태 및 애니메이션
-│   ├── history_view_model.dart        # 히스토리 필터링 및 차트 데이터 가공
-│   ├── transaction_form_view_model.dart # 입력 폼 검증 및 저장 로직
-│   ├── backup_view_model.dart         # 백업/복원/삭제 ViewModel
-│   └── settings_view_model.dart       # 설정(환산율) ViewModel
-├── screens/
-│   ├── dashboard_screen.dart          # 메인 대시보드
-│   ├── history_screen.dart            # 전체 거래 내역 + 차트
-│   ├── settings_screen.dart           # 설정 화면
-│   ├── transaction_form_screen.dart   # 수입/지출 입력 폼
-│   └── edit_transaction_screen.dart   # 기존 거래 수정 화면
-└── utils/
-    ├── app_theme.dart                 # 디자인 시스템
-    ├── point_manager.dart             # 포인트↔원화 변환 유틸
-    ├── backup_manager.dart            # JSON 백업 직렬화/역직렬화
-    └── record_database.dart           # SQLite 래퍼
+└── src/
+    ├── constants/                     # 공통 상수 및 설정값
+    ├── data/                          # 로우레벨 데이터 소스 및 유틸리티
+    │   ├── backup_manager.dart        # JSON 백업 직렬화/역직렬화
+    │   ├── point_manager.dart         # 포인트↔원화 변환 로직
+    │   └── record_database.dart       # SQLite 래퍼
+    ├── models/                        # 도메인 데이터 모델
+    │   └── point_record.dart          # PointRecord, TransactionType
+    ├── providers/                     # 상태 관리 (ViewModel 역할)
+    │   ├── backup_view_model.dart     # 백업/복원 로직
+    │   ├── dashboard_view_model.dart  # 대시보드 상태 및 애니메이션
+    │   ├── history_view_model.dart    # 히스토리 필터링 및 가공
+    │   ├── point_view_model.dart      # 핵심 전역 상태 (잔액, 기록)
+    │   ├── settings_view_model.dart   # 설정 관리
+    │   └── transaction_form_view_model.dart # 입력 폼 로직
+    ├── repositories/                  # 데이터 소스 추상화 레이어
+    │   └── point_repository.dart      # SQLite + Legacy Migration 중재
+    └── ui/                            # 시각적 요소 레이어
+        ├── app_theme.dart             # 디자인 시스템 및 테마
+        └── screens/                   # 앱 화면 (View)
+            ├── dashboard_screen.dart  # 메인 대시보드
+            ├── edit_transaction_screen.dart # 거래 수정
+            ├── history_screen.dart    # 전체 내역 및 차트
+            ├── settings_screen.dart   # 설정 및 데이터 관리
+            └── transaction_form_screen.dart # 입력 폼
 ```
 
 ---
@@ -465,7 +468,7 @@ classDiagram
 
 ### 8.1 PointRepository
 
-**파일**: `lib/repositories/point_repository.dart`
+**파일**: `lib/src/repositories/point_repository.dart`
 
 데이터의 영속성(Persistence)을 전담하며, 다양한 데이터 소스 간의 중재자 역할을 합니다.
 
@@ -477,7 +480,7 @@ classDiagram
 
 ### 7.3 BackupViewModel — 백업/복원
 
-**파일**: `lib/viewmodels/backup_view_model.dart`
+**파일**: `lib/src/providers/backup_view_model.dart`
 
 데이터 내보내기/가져오기 및 전체 삭제를 전담합니다. `PointViewModel`에 대한 참조를 보유하여 복원 후 상태를 동기화합니다.
 
@@ -502,7 +505,7 @@ ChangeNotifierProxyProvider<PointViewModel, BackupViewModel>(
 
 ### 7.4 SettingsViewModel — 설정 관리
 
-**파일**: `lib/viewmodels/settings_view_model.dart`
+**파일**: `lib/src/providers/settings_view_model.dart`
 
 포인트 환산율 설정을 관리합니다. `PointManager` 싱글턴을 통해 `SharedPreferences`에 영속화합니다.
 
@@ -550,7 +553,7 @@ graph TB
 
 ### 8.2 DashboardScreen (메인 대시보드)
 
-**파일**: `lib/screens/dashboard_screen.dart`
+**파일**: `lib/src/ui/screens/dashboard_screen.dart`
 
 앱 실행 시 최초로 표시되는 메인 화면입니다.
 
@@ -591,7 +594,7 @@ graph TD
 
 ### 8.3 HistoryScreen (전체 기록)
 
-**파일**: `lib/screens/history_screen.dart`
+**파일**: `lib/src/ui/screens/history_screen.dart`
 
 전체 거래 내역을 조회하고 분석하는 화면입니다.
 
@@ -634,7 +637,7 @@ graph TD
 
 ### 8.4 TransactionFormScreen (수입/지출 입력)
 
-**파일**: `lib/screens/transaction_form_screen.dart`
+**파일**: `lib/src/ui/screens/transaction_form_screen.dart`
 
 수입 또는 지출 거래를 생성하는 Bottom Sheet 기반 폼입니다.
 
@@ -656,7 +659,7 @@ graph TD
 
 ### 8.5 EditTransactionScreen (거래 수정)
 
-**파일**: `lib/screens/edit_transaction_screen.dart`
+**파일**: `lib/src/ui/screens/edit_transaction_screen.dart`
 
 기존 거래의 금액과 사유를 수정하는 화면입니다.
 
@@ -674,7 +677,7 @@ graph TD
 
 ### 8.6 SettingsScreen (설정)
 
-**파일**: `lib/screens/settings_screen.dart`
+**파일**: `lib/src/ui/screens/settings_screen.dart`
 
 앱 설정, 백업/복원, 데이터 관리를 담당하는 화면입니다.
 
@@ -730,7 +733,8 @@ classDiagram
 
 ### 9.2 RecordDatabase — SQLite 래퍼
 
-**파일**: `lib/utils/record_database.dart`  
+**파일**: `lib/src/data/record_database.dart`
+  
 **패턴**: Singleton (`RecordDatabase.instance`)
 
 SQLite 데이터베이스에 대한 CRUD 연산을 제공합니다.
@@ -765,7 +769,8 @@ CREATE TABLE records (
 
 ### 9.3 PointManager — 포인트 환산 유틸
 
-**파일**: `lib/utils/point_manager.dart`  
+**파일**: `lib/src/data/point_manager.dart`
+  
 **패턴**: Singleton (`PointManager()`)
 
 포인트와 원화(KRW) 간 변환 및 포맷팅을 담당합니다.
@@ -796,7 +801,8 @@ KRW = 포인트 × pointToKRWRate
 
 ### 9.4 BackupManager — 백업 직렬화
 
-**파일**: `lib/utils/backup_manager.dart`  
+**파일**: `lib/src/data/backup_manager.dart`
+  
 **패턴**: Singleton (`BackupManager()`)
 
 거래 기록을 JSON 포맷으로 내보내고 가져오는 기능을 제공합니다.
@@ -839,7 +845,7 @@ KRW = 포인트 × pointToKRWRate
 
 ## 10. 디자인 시스템
 
-**파일**: `lib/utils/app_theme.dart`
+**파일**: `lib/src/ui/app_theme.dart`
 
 AMOLED 친화적인 순수 블랙 (#000000) 기반 다크 테마 디자인 시스템입니다.
 
