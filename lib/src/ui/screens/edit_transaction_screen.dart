@@ -74,7 +74,7 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            // ── Header
+            // ── 헤더 영역
             Center(
               child: Column(
                 children: [
@@ -110,7 +110,7 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
             ),
             const SizedBox(height: 24),
 
-            // ── Amount section
+            // ── 금액 입력 섹션
             _Card(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -192,7 +192,7 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
             ),
             const SizedBox(height: 16),
 
-            // ── Reason section
+            // ── 사유 입력 섹션
             _Card(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -229,7 +229,7 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
             ),
             const SizedBox(height: 16),
 
-            // ── Warning
+            // ── 주의사항 안내
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
@@ -263,7 +263,7 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
             ),
             const SizedBox(height: 16),
 
-            // ── Save button
+            // ── 수정사항 저장 버튼
             _SaveButton(isValid: _isValid, onSave: _save),
             const SizedBox(height: 32),
           ],

@@ -340,7 +340,7 @@ class _TransactionFormViewState extends State<_TransactionFormView> {
   }
 }
 
-// ─────────────────────── Reusable widgets ───────────────────────
+// ─────────────────────── 재사용 가능 위젯 ───────────────────────
 
 class _SectionCard extends StatelessWidget {
   const _SectionCard({required this.child});

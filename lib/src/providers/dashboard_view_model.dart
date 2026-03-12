@@ -5,7 +5,9 @@ import 'point_view_model.dart';
 class DashboardViewModel extends ChangeNotifier {
   final PointViewModel pointViewModel;
   
+  /// 대시보드 잔액 텍스트의 스케일 값 (애니메이션용)
   double _balanceScale = 1.0;
+  /// 이전 잔액 (변경 감지용)
   double _prevBalance = 0.0;
 
   DashboardViewModel({required this.pointViewModel}) {
@@ -14,8 +16,10 @@ class DashboardViewModel extends ChangeNotifier {
     pointViewModel.addListener(_onPointModelChanged);
   }
 
+  /// 현재 잔액 텍스트의 크기 배율
   double get balanceScale => _balanceScale;
 
+  /// PointViewModel의 잔액 변화를 감지하여 애니메이션을 실행합니다.
   void _onPointModelChanged() {
     if (pointViewModel.currentBalance != _prevBalance) {
       _prevBalance = pointViewModel.currentBalance;
@@ -23,8 +27,9 @@ class DashboardViewModel extends ChangeNotifier {
     }
   }
 
+  /// 잔액이 변할 때 텍스트가 커졌다가 작아지는 효과를 줍니다.
   void _triggerBalanceScaleAnimation() {
-    _balanceScale = 1.2; // 조금 더 눈에 띄게 변경
+    _balanceScale = 1.2; // 조금 더 눈에 띄게 강조
     notifyListeners();
     
     Future.delayed(const Duration(milliseconds: 200), () {

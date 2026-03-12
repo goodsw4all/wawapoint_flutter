@@ -2,8 +2,10 @@ import 'package:flutter/foundation.dart';
 import '../models/point_record.dart';
 import '../data/point_manager.dart';
 
+/// 기록 조회를 위한 시간 단위 (주, 월, 연)
 enum TimePeriod { week, month, year }
 
+/// TimePeriod 열거형에 대한 라벨 텍스트 확장
 extension TimePeriodExt on TimePeriod {
   String get label {
     switch (this) {
@@ -20,8 +22,10 @@ extension TimePeriodExt on TimePeriod {
 /// 기록 화면(HistoryScreen)의 상태와 비즈니스 로직을 담당하는 ViewModel입니다.
 class HistoryViewModel extends ChangeNotifier {
   TimePeriod _selectedPeriod = TimePeriod.month;
+  /// 현재 선택된 필터링 기간
   TimePeriod get selectedPeriod => _selectedPeriod;
 
+  /// 필터링 기간을 변경합니다.
   void setPeriod(TimePeriod period) {
     if (_selectedPeriod != period) {
       _selectedPeriod = period;

@@ -168,7 +168,7 @@ class _HistoryView extends StatelessWidget {
   }
 }
 
-// ─────────────────────── Statistics Card ───────────────────────
+// ─────────────────────── 통계 카드 위젯 ───────────────────────
 
 class _StatsCard extends StatelessWidget {
   const _StatsCard({
@@ -264,7 +264,7 @@ class _StatItem extends StatelessWidget {
   }
 }
 
-// ─────────────────────── Chart Section ───────────────────────
+// ─────────────────────── 차트 섹션 (지출 추이) ───────────────────────
 
 class _ChartSection extends StatelessWidget {
   const _ChartSection({
@@ -404,7 +404,7 @@ class _ChartSection extends StatelessWidget {
   }
 }
 
-// ─────────────────────── Transaction List ───────────────────────
+// ─────────────────────── 전체 거래 내역 리스트 ───────────────────────
 
 class _TransactionList extends StatelessWidget {
   const _TransactionList({

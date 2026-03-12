@@ -28,6 +28,7 @@ class AppColors {
   static const Color divider = Color(0xFF38383A);
 }
 
+/// 앱 전체에서 사용되는 그라데이션 정의
 class AppGradients {
   AppGradients._();
 
@@ -58,19 +59,23 @@ class AppGradients {
   );
 }
 
+/// 앱 위젯들의 데코레이션(BoxDecoration) 모음
 class AppDecorations {
   AppDecorations._();
 
+  /// 기본 어두운 카드 스타일
   static BoxDecoration card(BuildContext context) => BoxDecoration(
         color: AppColors.cardDark,
         borderRadius: BorderRadius.circular(20),
       );
 
+  /// 약간 솟아오른 듯한(Elevated) 카드 스타일
   static BoxDecoration cardElevated(BuildContext context) => BoxDecoration(
         color: AppColors.cardDarkElevated,
         borderRadius: BorderRadius.circular(20),
       );
 
+  /// 대시보드 메인 잔액 표시 카드 전용 스타일
   static BoxDecoration balanceCard() => BoxDecoration(
         color: AppColors.cardDarkSubtle,
         borderRadius: BorderRadius.circular(28),
@@ -87,6 +92,7 @@ class AppDecorations {
         ],
       );
 
+  /// 작고 둥근 필(Pill) 스타일 위젯 배경
   static BoxDecoration pill() => BoxDecoration(
         color: AppColors.cardDarkElevated,
         borderRadius: BorderRadius.circular(20),

@@ -49,7 +49,7 @@ class _DashboardView extends StatelessWidget {
           body: SafeArea(
             child: CustomScrollView(
               slivers: [
-                // ── Slim custom AppBar
+                // ── 상단 커스텀 앱바
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 8, 12, 0),
@@ -116,7 +116,7 @@ class _DashboardView extends StatelessWidget {
   }
 }
 
-// ─────────────────────── Balance Card ───────────────────────
+// ─────────────────────── 잔액 표시 카드 ───────────────────────
 
 class _BalanceCard extends StatelessWidget {
   const _BalanceCard({required this.scale, required this.vm});
@@ -202,7 +202,7 @@ class _BalanceCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────── Action Buttons ───────────────────────
+// ─────────────────────── 액션 버튼 (수입/지출) ───────────────────────
 
 class _ActionButtons extends StatelessWidget {
   const _ActionButtons({required this.onTap});
@@ -323,7 +323,7 @@ class _ActionButtonState extends State<_ActionButton>
   }
 }
 
-// ─────────────────────── Recent Transactions ───────────────────────
+// ─────────────────────── 최근 거래 기록 ───────────────────────
 
 class _RecentTransactions extends StatelessWidget {
   const _RecentTransactions({required this.vm});
@@ -427,7 +427,7 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
-// ─────────────────────── Reusable Transaction Tile ───────────────────────
+// ─────────────────────── 공용 거래 항목 타일 위젯 ───────────────────────
 
 class TransactionTile extends StatelessWidget {
   const TransactionTile({super.key, required this.record});
@@ -447,7 +447,7 @@ class TransactionTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // ── Colored circle icon
+          // ── 아이콘 영역
           Container(
             width: 50,
             height: 50,
@@ -464,7 +464,7 @@ class TransactionTile extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 14),
-          // ── Info
+          // ── 거래 정보 (사유, 날짜)
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -501,7 +501,7 @@ class TransactionTile extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          // ── Amount + balance
+          // ── 금액 및 잔액 스냅샷
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [

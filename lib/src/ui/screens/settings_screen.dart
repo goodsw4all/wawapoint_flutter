@@ -178,7 +178,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
-                      // ── Header
+                      // ── 헤더 영역
                       Center(
                         child: Column(
                           children: [
@@ -210,7 +210,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       const SizedBox(height: 24),
 
-                      // ── Point settings
+                      // ── 포인트 환산 설정
                       _SectionHeader(
                           icon: Icons.star_rounded,
                           label: '포인트 설정',
@@ -270,7 +270,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       const SizedBox(height: 20),
 
-                      // ── Backup
+                      // ── 데이터 백업 설정
                       _SectionHeader(
                           icon: Icons.storage_rounded,
                           label: '백업 및 복원',
@@ -299,7 +299,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       const SizedBox(height: 20),
 
-                      // ── App info
+                      // ── 앱 정보 섹션
                       _SectionHeader(
                           icon: Icons.info_rounded,
                           label: '앱 정보',
@@ -330,7 +330,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       const SizedBox(height: 20),
 
-                      // ── Data management
+                      // ── 데이터 관리 섹션
                       _SectionHeader(
                           icon: Icons.dns_rounded,
                           label: '데이터 관리',
@@ -359,7 +359,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       const SizedBox(height: 20),
 
-                      // ── Save button
+                      // ── 설정 저장 버튼
                       _SaveButton(onSave: _saveSettings),
                       const SizedBox(height: 32),
                     ]),
@@ -371,7 +371,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 }
 
-// ─────────────────────── Helper widgets ───────────────────────
+// ─────────────────────── 헬퍼 위젯 ───────────────────────
 
 class _SectionHeader extends StatelessWidget {
   const _SectionHeader(

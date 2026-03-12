@@ -10,15 +10,20 @@ class PointViewModel extends ChangeNotifier {
   final List<PointRecord> _records = [];
   double _currentBalance = 0.0;
 
+  /// 읽기 전용 거래 기록 목록
   List<PointRecord> get records => List.unmodifiable(_records);
+  /// 현재 잔액 (원화 기준)
   double get currentBalance => _currentBalance;
 
+  /// 포맷팅된 현재 잔액 문자열 (예: 1,000원)
   String get formattedBalance =>
       PointManager().formatKRW(_currentBalance);
 
+  /// 포맷팅된 현재 포인트 문자열 (예: 1,000 P)
   String get formattedPoints =>
       PointManager().formatPoints(PointManager().krwToPoints(_currentBalance));
 
+  /// 현재 잔액의 포인트 환산값
   double get currentPoints =>
       PointManager().krwToPoints(_currentBalance);
 
@@ -26,6 +31,7 @@ class PointViewModel extends ChangeNotifier {
 
   /// 모든 기록을 로드하고 현재 잔액을 계산합니다.
   Future<void> loadRecords() async {
+    // 환산율 로드
     await PointManager().load();
 
     try {
