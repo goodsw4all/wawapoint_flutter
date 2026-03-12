@@ -7,6 +7,10 @@ import 'src/providers/settings_view_model.dart';
 import 'src/ui/screens/dashboard_screen.dart';
 import 'src/ui/app_theme.dart';
 
+/// 앱의 진입점 (Entry Point)
+/// 
+/// `main` 함수에서 Flutter 바인딩을 초기화하고 전역 상태(Provider)를 설정하여
+/// `WaWaPointApp` 루트 위젯을 실행합니다.
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(
@@ -19,6 +23,10 @@ void main() {
   runApp(const WaWaPointApp());
 }
 
+/// WaWa Point 최상위 애플리케이션 위젯
+/// 
+/// `MultiProvider`를 통해 전역 ViewModel들을 주입하고, 앱의 글로벌 테마 및 색상
+/// 팔레트를 정의합니다.
 class WaWaPointApp extends StatelessWidget {
   const WaWaPointApp({super.key});
 
