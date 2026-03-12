@@ -8,6 +8,8 @@
 
 1.  **[ARCHITECTURE.md](docs/ARCHITECTURE.md)**: 전체 아키텍처(MVVM-Repository), 데이터 영속성 전략, 레이어별 상세 설계 등을 다룹니다.
 2.  **[LEARNING_GUIDE.md](docs/LEARNING_GUIDE.md)**: Flutter 입문자 또는 복귀 개발자를 위한 워크플로우, 핵심 개념, 위젯 코드 분석 가이드입니다.
+3.  **[STYLE_GUIDE.md](docs/STYLE_GUIDE.md)**: Dart 명명 규칙, 상태 관리(Provider) 등 본 프로젝트의 코딩 스타일 및 컨벤션을 정의합니다.
+4.  **[PRD_TEMPLATE.md](docs/PRD_TEMPLATE.md)**: 새로운 앱 아이디어를 구체화하거나 Flutter 프로젝트를 시작할 때 활용할 수 있는 PRD 템플릿입니다.
 
 ---
 
