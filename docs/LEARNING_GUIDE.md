@@ -1,28 +1,31 @@
-# WaWa Point — Flutter 개발자 학습 가이드 🚀
+# WaWa Point — Flutter/Dart 실전 교과서 📘
 
-> 본 문서는 Flutter를 이전에 경험했으나 최신 트렌드와 본 프로젝트의 구조를 빠르게 파악하고자 하는 개발자를 위해 작성되었습니다.  
-> **대상**: Flutter 경력자 (복귀 또는 본 프로젝트 신규 투입)
-
----
-
-## 목차
-
-1. [개요 및 워크플로우](#1-개요-및-워크플로우)
-2. [Dart 언어 핵심 리마인더](#2-dart-언어-핵심-리마인더)
-3. [Flutter 위젯 & 생명주기](#3-flutter-위젯--생명주기)
-4. [상태 관리: Provider 심화](#4-상태-관리-provider-심화)
-5. [모듈별 코드 분석](#5-모듈별-코드-분석)
-6. [데이터베이스 레이어 (SQLite)](#6-데이터베이스-레이어-sqlite)
-7. [Flutter 특화 팁](#7-flutter-특화-팁)
-8. [Flutter CLI 명령어](#8-flutter-cli-명령어)
-9. [시퀀스 다이어그램: 앱 초기화](#9-시퀀스-다이어그램-앱-초기화)
-10. [시퀀스 다이어그램: MVVM CRUD 흐름](#10-시퀀스-다이어그램-mvvm-crud-흐름)
-11. [테스트 가이드](#11-테스트-가이드)
-12. [트러블슈팅](#12-트러블슈팅)
+> 본 문서는 단순한 가이드를 넘어, Flutter의 내부 원리와 Dart의 심화 개념, 그리고 WaWa Point의 아키텍처를 체계적으로 학습하기 위한 '교과서'로 작성되었습니다.  
+> **대상**: Flutter 기초를 넘어 전문가로 도약하고자 하는 개발자
 
 ---
 
-## 1. 개요 및 워크플로우
+## 📚 목차
+
+1. [Chapter 1: 개요 및 개발 원칙](#1-개요-및-개발-원칙)
+2. [Chapter 2: Dart 언어 심화 (Deep Dive)](#2-dart-언어-심화-deep-dive)
+3. [Chapter 3: Flutter 아키텍처 및 렌더링 원리](#3-flutter-아키텍처-및-렌더링-원리)
+4. [Chapter 4: 상태 관리 마스터: Provider & ProxyProvider](#4-상태-관리-마스터-provider--proxyprovider)
+5. [Chapter 5: 모듈별 심화 코드 분석](#5-모듈별-심화-코드-분석)
+6. [Chapter 6: 영속성 레이어 (SQLite & Migration)](#6-영속성-레이어-sqlite--migration)
+7. [Chapter 7: 실전 레이아웃 & Sliver 시스템](#7-실전-레이아웃--sliver-시스템)
+8. [Chapter 8: CLI 및 빌드 자동화](#8-cli-및-빌드-자동화)
+9. [Chapter 9: 시퀀스 다이어그램: 앱 초기화](#9-시퀀스-다이어그램-앱-초기화)
+10. [Chapter 10: 시퀀스 다이어그램: MVVM CRUD 흐름](#10-시퀀스-다이어그램-mvvm-crud-흐름)
+11. [Chapter 11: 테스트 전략 및 가이드](#11-테스트-전략-및-가이드)
+12. [Chapter 12: 트러블슈팅 매뉴얼](#12-트러블슈팅-매뉴얼)
+13. [Chapter 13: 고급 주제 (CustomPainter & Native)](#13-고급-주제-custompainter--native)
+14. [Chapter 14: 아키텍처 딥다이브 (MVVM-R)](#14-아키텍처-딥다이브-mvvm-r)
+15. [Chapter 15: 개발 생산성 및 성능 최적화](#15-개발-생산성-및-성능-최적화)
+
+---
+
+## Chapter 1. 개요 및 개발 원칙
 
 ### 1.1 핵심 프로젝트 철학
 - **Declarative UI**: 모든 UI는 상태(State)의 함수입니다 — $UI = f(State)$
@@ -31,31 +34,40 @@
 
 ### 1.2 Flutter 표준 아키텍처 (Layered Architecture)
 
+WaWa Point는 관심사 분리(SoC)를 위해 엄격한 계층화 아키텍처를 따릅니다.
+
 ```mermaid
-graph LR
-    subgraph "UI (Presentation)"
-        A["🖼 Screens<br/>ui/screens"]
-    end
-    subgraph "Business Logic"
-        B["🧠 Providers<br/>src/providers"]
-    end
-    subgraph "Repository"
-        C["📦 Repository<br/>src/repositories"]
-    end
-    subgraph "Data"
-        D["💾 Data Sources<br/>src/data"]
-        E["📋 Models<br/>src/models"]
+graph TB
+    subgraph "🎨 View Layer (ui/)"
+        Screen[Screens]
+        Theme[AppTheme]
     end
 
-    A -->|이벤트 전달| B
-    B -->|데이터 요청| C
-    C -->|저장/조회| D
-    D -. 공유 .-> E
-    B -. 공유 .-> E
-    A -. 공유 .-> E
+    subgraph "🧠 ViewModel Layer (providers/)"
+        VM[ViewModels<br/>Single Source of Truth]
+    end
+
+    subgraph "🧱 Repository Layer (repositories/)"
+        Repo[PointRepository<br/>Data Mediator]
+    end
+
+    subgraph "💾 Data Layer (data/)"
+        Service[Services/Utils<br/>SQLite, SharedPreferences]
+    end
+
+    subgraph "📦 Model Layer (models/)"
+        Model[Domain Entities<br/>PointRecord]
+    end
+
+    View --> VM
+    VM --> Repo
+    Repo --> Service
+    Service -. 참조 .-> Model
+    Repo -. 참조 .-> Model
+    VM -. 참조 .-> Model
 ```
 
-**단방향 의존성 원칙**: 상위 레이어는 하위 레이어를 알지만, 하위 레이어는 상위 레이어를 절대 참조하지 않습니다.
+**단방향 의존성 원칙**: 상위 레이어는 하위 레이어를 알지만, 하위 레이어는 상위 레이어를 절대 참조하지 않아야 합니다. (예: ViewModel은 UI 위젯을 알 수 없음)
 
 ### 1.3 소스 폴더 구조 (`lib/src`)
 
@@ -105,109 +117,102 @@ graph TD
 
 ---
 
-## 2. Dart 언어 핵심 리마인더
+---
 
-### 2.1 Null Safety
+## Chapter 2. Dart 언어 심화 (Deep Dive)
 
-Dart 2.12부터 Null Safety가 기본입니다. Flutter 개발 시 가장 먼저 혼동하는 부분입니다.
+### 2.1 Null Safety & Pattern Matching
+
+Dart 3.0부터 도입된 **Patterns**와 **Records**는 가독성을 비약적으로 향상시킵니다.
 
 ```dart
-// ✅ Null이 될 수 없는 타입
-String name = '홍길동';
+// ✅ Records: 여러 값을 간단히 반환
+(String, int) getUser() => ('Alice', 30);
+final (name, age) = getUser(); // Destructuring
 
-// ✅ Null이 될 수 있는 타입 (? 붙임)
-String? optionalName = null;
-
-// ✅ 늦은 초기화 (late) - 반드시 사용 전에 초기화됨을 보장할 때
-late final Database _db;
-
-// ✅ Null 체크 연산자
-print(optionalName?.length);    // null이면 null 반환 (안전 호출)
-print(optionalName!.length);    // null이면 런타임 에러 (개발자 책임 단언)
-print(optionalName ?? '기본값'); // null이면 우측 값 사용
+// ✅ Switch Expression: 선언적 코드 작성
+String getMessage(int status) => switch (status) {
+  200 => 'Success',
+  404 => 'Not Found',
+  _ => 'Unknown'
+};
 ```
 
-### 2.2 비동기 처리 (async / await / Future)
+### 2.2 Mixins & Extensions
 
-Flutter의 DB, 파일, 네트워크는 모두 비동기입니다.
+코드 재사용과 확장을 위한 핵심 기능입니다.
+
+#### Mixin (with 키워드)
+다중 상속의 효과를 내며, 특정 기능을 '조합'할 때 사용합니다.
+- **예시**: `SingleTickerProviderStateMixin` (애니메이션 지원), [Dashboard VM](file:///Volumes/Development/Projects/Flutter/WaWa%20Point/wawapoint_flutter/lib/src/ui/screens/dashboard_screen.dart)에서 활용됨.
 
 ```dart
-// ❌ 나쁜 예: then() 체인이 깊어져서 콜백 지옥 발생
-db.query('records').then((result) {
-  result.map((r) => PointRecord.fromJson(r)).toList();
-});
+mixin Logger {
+  void log(String msg) => print('[LOG]: $msg');
+}
 
-// ✅ 좋은 예: async/await으로 동기 코드처럼 읽힘
-Future<List<PointRecord>> getAllRecords() async {
-  final db = await instance.database;      // DB 연결 대기
-  final result = await db.query('records'); // 조회 대기
-  return result.map((r) => PointRecord.fromJson(r)).toList();
+class MyService with Logger {
+  void doWork() => log('Working...'); // Logger의 기능을 직접 사용
 }
 ```
 
-| 키워드 | 설명 |
-|--------|------|
-| `Future<T>` | 미래에 T 타입 값이 반환될 것을 약속 |
-| `async` | 함수가 비동기임을 선언. 반환값은 자동으로 `Future`로 래핑 |
-| `await` | `Future`의 완료를 기다림. `async` 함수 내에서만 사용 가능 |
-| `FutureOr<T>` | `T` 또는 `Future<T>`를 모두 반환 가능한 타입 |
-
-### 2.3 컬렉션 조작 (List, Map)
+#### Extension
+이미 정의된 클래스에 새로운 메서드를 추가합니다.
+- **예시**: `TimePeriodExt` ([history_view_model.dart](file:///Volumes/Development/Projects/Flutter/WaWa%20Point/wawapoint_flutter/lib/src/providers/history_view_model.dart))
 
 ```dart
-final List<PointRecord> records = [...];
-
-// map: 각 요소를 변환하여 새 리스트 생성
-final amounts = records.map((r) => r.amount).toList();
-
-// where: 조건에 맞는 요소만 필터링
-final incomes = records.where((r) => r.type == TransactionType.income).toList();
-
-// fold: 리스트를 하나의 값으로 누적 계산
-final total = records.fold<double>(0, (sum, r) => sum + r.amount);
-
-// any / every: 조건 만족 여부 확인 (bool 반환)
-final hasIncome = records.any((r) => r.type == TransactionType.income);
-```
-
-### 2.4 Spread 연산자 & Collection if/for (Dart 전용)
-
-```dart
-// Widget 리스트 동적 구성에 자주 사용됩니다
-Column(
-  children: [
-    const Header(),
-    if (isLoading) const LoadingSpinner(),   // Collection if
-    for (final item in items) ItemTile(item), // Collection for
-    ...extraWidgets,                           // Spread (다른 리스트 삽입)
-  ],
-)
-```
-
-### 2.5 Named Parameters & 기본값
-
-```dart
-// 위젯 생성자 패턴 (Flutter의 관용구)
-class TransactionTile extends StatelessWidget {
-  const TransactionTile({
-    super.key,
-    required this.record,    // required: 반드시 전달 必
-    this.onTap,              // optional: null 허용
-    this.showDate = true,    // default: 기본값 지정
-  });
-
-  final PointRecord record;
-  final VoidCallback? onTap;
-  final bool showDate;
-  ...
+extension StringExtensions on String {
+  bool get isValidEmail => contains('@');
 }
+// 사용: "test@test.com".isValidEmail -> true
 ```
+
+### 2.3 Generics & Type Safety
+
+타입 안전성을 보장하면서 유연한 코드를 작성합니다.
+
+```dart
+// Result<T> 패턴: 결과 또는 에러를 타입 안전하게 처리
+sealed class Result<T> {}
+class Success<T> extends Result<T> { final T data; Success(this.data); }
+class Failure<T> extends Result<T> { final String error; Failure(this.error); }
+```
+
+### 2.4 Stream & Sink (Reactive Programming)
+
+지속적인 데이터 흐름을 다룰 때 사용합니다. `Future`가 단발성이라면, `Stream`은 파이프라인입니다.
+
+| 요소 | 역할 |
+|------|------|
+| `Stream` | 데이터가 흘러나오는 통로 (읽기 전용) |
+| `StreamController` | Stream을 생성하고 관리하는 제어기 |
+| `Sink` | 데이터를 Stream으로 밀어넣는 입구 |
 
 ---
 
-## 3. Flutter 위젯 & 생명주기
+## Chapter 3. Flutter 아키텍처 및 렌더링 원리
 
-### 3.1 StatelessWidget vs StatefulWidget 선택 기준
+### 3.1 Flutter의 세 가지 트리 (The Three Trees)
+
+Flutter는 고성능 렌더링을 위해 세 가지 트리를 병렬적으로 관리합니다.
+
+1. **Widget Tree**: 설계도. 불변(Immutable)하며, 상태가 바뀔 때마다 새로 생성됩니다. 매우 가볍습니다.
+2. **Element Tree**: 중간 관리자. 생명주기를 관리하며, 위젯과 렌더 객체를 연결합니다. (`BuildContext`의 실체)
+3. **Render Tree**: 실제 구현체. 크기(Size)와 위치(Offset)를 계산하고 화면에 그립니다. 가변(Mutable)하며 무겁습니다.
+
+> **Why?**: 위젯이 새로 생성되어도 엘리먼트 트리가 기존 렌더 객체를 재사용할지 결정하기 때문에(Diffing 알고리즘), 매번 전체를 다시 그리지 않고도 초당 60~120fps를 유지할 수 있습니다.
+
+### 3.2 Key 시스템의 이해
+
+위젯이 트리 내에서 자신의 정체성을 유지하게 도와줍니다.
+
+| 종류 | 용도 | 사용 사례 |
+|------|------|-----------|
+| `ValueKey` | 로컬 ID 부여 | 리스트 항목의 정렬/삭제 시 상태 보존 |
+| `ObjectKey` | 객체 기반 ID | 데이터 객체 자체를 키로 사용 |
+| `GlobalKey` | 전역 고유 키 | 다른 위젯에서 특정 위젯의 상태에 접근할 때 (예: Form 검증) |
+
+### 3.3 StatelessWidget vs StatefulWidget 선택 기준
 
 ```mermaid
 graph TD
@@ -292,20 +297,40 @@ class _MyScreenState extends State<MyScreen> {
 
 ---
 
-## 4. 상태 관리: Provider 심화
+## Chapter 4. 상태 관리 마스터: Provider & ProxyProvider
 
-### 4.1 Provider 핵심 API
+### 4.1 핵심 API 및 최적화 전략
 
-| API | 언제 사용? | 코드 |
-|-----|-----------|------|
-| `Consumer<T>` | 위젯 트리의 특정 부분만 리빌드 | `Consumer<PointViewModel>(builder: ...)` |
-| `context.watch<T>()` | 현재 위젯 전체를 구독 | `final vm = context.watch<MyVM>();` |
-| `context.read<T>()` | 이벤트 핸들러 내 1회 접근 | `context.read<MyVM>().save();` |
-| `context.select<T, R>()` | VM의 특정 프로퍼티만 구독해 리빌드 최소화 | `context.select((PointVM v) => v.balance)` |
+| API | 특징 | 최적화 레벨 |
+|-----|------|-------------|
+| `context.watch<T>()` | VM 변경 시 위젯 전체 리빌드 | Low (단순함) |
+| `context.select<T, R>()` | 특정 속성 변경 시에만 리빌드 | High (권장) |
+| `Selector<T, R>` | `builder` 내부만 정밀하게 리빌드 | Ultra (복잡한 트리) |
 
-> **⚠️ 주의**: `build` 메서드 외부(이벤트 핸들러)에서는 `context.watch()`가 아닌 `context.read()`를 사용해야 합니다.
+#### Selector 활용 (성능 최적화의 핵심)
+VM의 수많은 속성 중 단 하나만 관찰하여 불필요한 연산을 줄입니다.
+```dart
+// ✅ balance가 바뀔 때만 Text 위젯이 리빌드됨
+Selector<PointViewModel, double>(
+  selector: (_, vm) => vm.currentBalance,
+  builder: (_, balance, __) => Text('$balance P'),
+)
+```
 
-### 4.2 이 프로젝트의 Provider 등록 구조
+### 4.2 ProxyProvider: 객체 간 의존성 관리
+
+하나의 Provider가 다른 Provider의 데이터를 필요로 할 때 사용합니다.
+- **예시**: `BackupViewModel`은 `PointViewModel`의 데이터를 백업해야 하므로 의존성이 발생합니다.
+
+```dart
+// main.dart 등록 예시
+ChangeNotifierProxyProvider<PointViewModel, BackupViewModel>(
+  create: (ctx) => BackupViewModel(ctx.read<PointViewModel>()),
+  update: (ctx, pointVm, prev) => prev!..updatePointViewModel(pointVm),
+)
+```
+
+### 4.3 이 프로젝트의 Provider 등록 구조
 
 ```dart
 // main.dart — Provider 등록 방식
@@ -363,9 +388,21 @@ Navigator.push(context, MaterialPageRoute(
 
 ---
 
-## 5. 모듈별 코드 분석
+## Chapter 5. 모듈별 심화 코드 분석
 
-### 5.1 Model Layer — `PointRecord`
+### 5.1 MVVM-Repository 역할 분리 원칙
+
+코드의 유지보수성을 위해 각 레이어는 아래와 같은 엄격한 책임을 집니다.
+
+| 계층 | 책임 | 금지 사항 |
+|------|------|-----------|
+| **View (ui/)** | UI 렌더링, 사용자 입력 수신 | 비즈니스 로직, 직접적인 데이터 가공 |
+| **ViewModel (providers/)** | UI 상태 관리, 비즈니스 로직, 데이터 바인딩 | UI 코드(`BuildContext` 보유), DB 직접 접근 |
+| **Repository (repositories/)** | 데이터 소스 중재, 마이그레이션, 무결성 유지 | UI 상태 관리, 복잡한 업무 로직 |
+| **Model (models/)** | 데이터 구조 정의, 직렬화 | 로직 포함, 상태 변경 알림 |
+| **Service (data/)** | DB 엔진, 유틸리티 등 로우레벨 인프라 | 상태 관리, 도메인 비즈니스 로직 |
+
+### 5.2 Model Layer — `PointRecord`
 
 순수한 데이터 클래스입니다. 로직 없이 데이터 구조와 직렬화만 담당합니다.
 
@@ -530,7 +567,7 @@ class _BalanceCard extends StatelessWidget {
 
 ---
 
-## 6. 데이터베이스 레이어 (SQLite)
+## Chapter 6. 영속성 레이어 (SQLite & Migration)
 
 ### 6.1 전체 흐름
 
@@ -570,20 +607,27 @@ class RecordDatabase {
 }
 ```
 
-### 6.3 테이블 스키마
+### 6.3 테이블 스키마 상세
 
-```sql
-CREATE TABLE records (
-  id          TEXT PRIMARY KEY,  -- UUID (Dart uuid 패키지로 생성)
-  date        TEXT NOT NULL,     -- ISO 8601: "2026-03-11T12:00:00.000"
-  type        TEXT NOT NULL,     -- enum: "income" | "expense"
-  amount      REAL NOT NULL,     -- Dart double → SQLite REAL
-  reason      TEXT NOT NULL,     -- 사유 메모
-  balanceAfter REAL NOT NULL     -- 거래 후 잔액 스냅샷
-);
-```
+| 필드 | 타입 | 설명 | 비고 |
+|------|------|------|------|
+| `id` | `TEXT` | 고유 식별자 | UUID v4 (Primary Key) |
+| `date` | `TEXT` | 거래 일시 | ISO 8601 String |
+| `type` | `TEXT` | 수입/지출 구분 | 'income' | 'expense' |
+| `amount` | `REAL` | 거래 금액 | 포인트 또는 원화 |
+| `reason` | `TEXT` | 거래 사유 | 사용자 입력 메모 |
+| `balanceAfter` | `REAL` | 거래 후 잔액 | 원화 단위 자동 계산 |
 
-### 6.4 CRUD 구현 패턴
+### 6.4 주요 데이터 서비스 (Service Layer)
+
+로우레벨 인프라를 담당하는 싱글톤 객체들입니다.
+
+1. **PointManager**: 포인트↔원화 환산 전담. `SharedPreferences`를 통해 설정값 영속화.
+2. **BackupManager**: `BackupData` 모델을 기반으로 JSON 직렬화/역직렬화 및 파일 시스템 입출력 담당.
+
+---
+
+### 6.5 CRUD 구현 패턴
 
 ```dart
 // ── CREATE ──────────────────────────────────────────────
@@ -627,7 +671,7 @@ Future<void> clearAll() async {
 }
 ```
 
-### 6.5 데이터 직렬화 요약
+### 6.6 데이터 직렬화 요약
 
 | 방향 | 메서드 | 이유 |
 |------|--------|------|
@@ -638,7 +682,7 @@ Future<void> clearAll() async {
 
 ---
 
-## 7. Flutter 특화 팁
+## Chapter 7. 실전 레이아웃 & Sliver 시스템
 
 ### 7.1 Hot Reload vs Hot Restart 언제 쓸까?
 
@@ -720,7 +764,7 @@ CustomScrollView(
 
 ---
 
-## 8. Flutter CLI 명령어
+## Chapter 8. CLI 및 빌드 자동화
 
 ### 8.1 기본 명령어
 
@@ -761,7 +805,7 @@ CustomScrollView(
 
 ---
 
-## 9. 시퀀스 다이어그램: 앱 초기화
+## Chapter 9. 시퀀스 다이어그램: 앱 초기화
 
 앱 실행부터 화면에 데이터가 렌더링되기까지의 전체 흐름입니다.
 
@@ -771,73 +815,90 @@ sequenceDiagram
     participant Main as main.dart
     participant MP as MultiProvider
     participant PVM as PointViewModel
-    participant Repo as PointRepository
-    participant DB as SQLite DB
     participant DS as DashboardScreen
 
     OS->>Main: 앱 실행 (main())
     Main->>Main: WidgetsFlutterBinding.ensureInitialized()
     Main->>MP: MultiProvider 생성 (전역 VM 등록)
     Note over MP: PVM, SVM, BVM 인스턴스 생성 및 메모리 할당
-    Main->>DS: runApp() → DashboardScreen 첫 렌더링 (loading 상태)
-
-    DS->>PVM: didChangeDependencies() → loadRecords()
+    
+    Main->>DS: runApp() → DashboardScreen 첫 렌더링
+    DS->>PVM: context.read<PointViewModel>().loadRecords() (didChangeDependencies)
+    
     PVM->>PVM: _isLoading = true; notifyListeners()
-    DS->>DS: Re-build → LoadingSpinner 표시
-
     PVM->>Repo: getAllRecords()
-    Repo->>Repo: _migrateIfNeeded() (레거시 JSON 확인)
     Repo->>DB: db.query('records')
-    DB-->>Repo: List<Map> 반환
-    Repo-->>PVM: List<PointRecord> 반환
-
-    PVM->>PVM: _records 갱신; _isLoading = false
-    PVM->>PVM: notifyListeners()
-    PVM-->>DS: Consumer/watch 트리거
-    DS->>DS: Re-build → 실제 데이터 리스트 표시
+    DB-->>PVM: List<PointRecord> 반환
+    PVM->>PVM: _isLoading = false; notifyListeners()
+    
+    PVM-->>DS: UI 리빌드 트리거 (실제 데이터 표시)
 ```
 
 ---
 
-## 10. 시퀀스 다이어그램: MVVM CRUD 흐름
+## Chapter 10. 시퀀스 다이어그램: 비즈니스 파이프라인
 
-사용자 인터랙션부터 DB 저장, UI 갱신까지의 전체 CRUD 흐름입니다.
+### 10.1 포인트 적립 흐름 (Income)
 
 ```mermaid
 sequenceDiagram
-    participant User as 👤 사용자
-    participant View as 🖼 Screen (View)
-    participant VM as 🧠 ViewModel
-    participant Repo as 📦 Repository
-    participant DB as 💾 SQLite
+    actor User
+    participant V as TransactionFormView
+    participant VM as TransactionFormVM
+    participant PVM as PointViewModel
+    
+    User->>V: 포인트 수량 + 사유 입력
+    V->>VM: save()
+    VM->>PVM: addPointIncome(amount, reason)
+    PVM->>Repo: addRecord(record)
+    Repo->>DB: SQLite Insert
+    PVM->>PVM: notifyListeners()
+    PVM-->>V: UI 자동 갱신
+```
 
-    User->>View: 버튼 탭 (포인트 받기)
-    View->>View: showModalBottomSheet (TransactionFormScreen)
-    User->>View: 금액/사유 입력 후 저장 탭
+### 10.2 지출 기록 및 잔액 검증 (Expense)
 
-    View->>VM: context.read<TransactionFormVM>().submit()
-    VM->>VM: 유효성 검사 (금액 > 0, 사유 비지 않음)
+```mermaid
+sequenceDiagram
+    actor User
+    participant V as TransactionFormView
+    participant PVM as PointViewModel
 
-    alt 유효성 실패
-        VM-->>View: 에러 상태 업데이트 + notifyListeners()
-        View->>View: 에러 메시지 표시
-    else 유효성 성공
-        VM->>VM: PointRecord 객체 생성 (uuid, DateTime.now())
-        VM->>Repo: addRecord(record)
-        Repo->>DB: db.insert('records', record.toJson())
-        DB-->>Repo: 성공
-        Repo-->>VM: 완료
-        VM->>VM: context.read<PointViewModel>().loadRecords()
-        Note over VM: 전역 SSOT를 리로드하여 모든 구독자 갱신
-        VM-->>View: notifyListeners() (isLoading, 완료 상태)
-        View->>View: Navigator.pop() (폼 닫기)
-        View->>View: DashboardScreen Re-build (최신 잔액 표시)
+    User->>V: 금액(원) + 사유 입력 후 저장
+    V->>PVM: addExpense(amount, reason)
+    
+    alt 잔액 충분
+        PVM->>Repo: addRecord(record)
+        PVM->>PVM: notifyListeners()
+        PVM-->>V: 성공 (Dialog 닫힘)
+    else 잔액 부족
+        PVM-->>V: 실패 (경고 메시지 표시)
     end
+```
+
+### 10.3 백업 및 복원 파이프라인
+
+```mermaid
+sequenceDiagram
+    participant BVM as BackupViewModel
+    participant BM as BackupManager
+    participant PVM as PointViewModel
+
+    Note over BVM,PVM: ── 백업 흐름 ──
+    BVM->>PVM: records 읽기
+    BVM->>BM: exportToJson(records)
+    BM->>FS: File.writeAsString()
+    
+    Note over BVM,PVM: ── 복원 흐름 ──
+    BVM->>BM: importFromJson(file)
+    BM-->>BVM: List<PointRecord>
+    BVM->>DB: overwriteAll(records)
+    BVM->>PVM: loadRecords() (상태 동기화)
 ```
 
 ---
 
-## 11. 테스트 가이드
+## Chapter 11. 테스트 전략 및 가이드
 
 ### 11.1 테스트 종류
 
@@ -889,7 +950,7 @@ flutter test --coverage                         # 커버리지 측정
 
 ---
 
-## 12. 트러블슈팅
+## Chapter 12. 트러블슈팅 매뉴얼
 
 ### ❌ 화면이 갱신되지 않음
 
@@ -981,5 +1042,62 @@ flutter run
 
 ---
 
-이제 이 가이드와 함께 WaWa Point의 핵심 개발자로 거듭나시길 응원합니다! 🚀✨  
-궁금한 점은 `ARCHITECTURE.md`를 함께 참고하세요.
+---
+
+## Chapter 13. 고급 주제 (CustomPainter & Native)
+
+### 13.1 CustomPainter: 선과 면으로 그리기
+복잡한 그래프나 커스텀 UI가 필요할 때 사용합니다. `Canvas`에 직접 명령을 내립니다.
+
+```dart
+class MyPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = Colors.blue;
+    canvas.drawCircle(Offset(size.width/2, size.height/2), 20, paint);
+  }
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+```
+
+### 13.2 MethodChannel: 네이티브 기능 호출
+Flutter가 직접 지원하지 않는 하드웨어 사양(배터리 상태, 센서 등)에 접근할 때 사용합니다.
+
+---
+
+## Chapter 14. 아키텍처 딥다이브 (MVVM-R)
+
+### 14.1 왜 MVVM-R 인가?
+WaWa Point는 복잡한 데이터 동기화와 UI 상태 관리를 처리하기 위해 이 패턴을 선택했습니다.
+
+1. **Model**: 순수 데이터 (JSON 직렬화 포함).
+2. **ViewModel**: 비즈니스 로직 및 상태 담당. UI에 종속되지 않음.
+3. **Repository**: 데이터 소스(Local DB, Backup)의 추상화.
+4. **View**: UI 레이아웃만 담당. Logic-less.
+
+### 14.2 종속성 역전 (Dependency Inversion)
+ViewModel은 Repository의 인터페이스만 알 뿐, 그 구현체가 SQLite인지, Firebase인지는 알 필요가 없습니다. 이는 테스트 용이성을 극대화하며, 데이터 소스 변경 시에도 비즈니스 로직을 보호합니다.
+
+### 14.3 Repository의 중재자 역할
+- **SQLite + Lecacy Migration**: 앱 초기 실행 시 기존 JSON 파일을 파싱하여 SQLite로 이관하고 원본을 삭제하는 작업을 중재합니다.
+- **데이터 무결성**: 저장/조회 시 형식을 검증하여 상위 레이어(VM)에 항상 깨끗한 도메인 객체를 전달합니다.
+
+---
+
+## Chapter 15. 개발 생산성 및 성능 최적화
+
+### 15.1 Flutter DevTools 마스터하기
+- **Flutter Inspector**: 위젯 트리 탐색 및 레이아웃 디버깅.
+- **CPU Profiler**: 성능 병목 구간 찾기.
+- **Memory**: 메모리 누수 감지.
+
+### 15.2 성능 최적화 골든 룰
+1. **리빌드 최소화**: `const` 위젯 사용, `Selector` 활용.
+2. **비싼 연산 build() 밖으로**: 정렬, 필터링 등은 데이터 변경 시점에 미리 계산.
+3. **이미지 최적화**: 적절한 해상도와 캐싱 사용.
+
+---
+
+이제 이 교과서와 함께 WaWa Point의 완성도 높은 코드를 설계하고 구현하시길 응원합니다! 🚀✨  
+궁금한 점은 [ARCHITECTURE.md](file:///Volumes/Development/Projects/Flutter/WaWa%20Point/wawapoint_flutter/docs/ARCHITECTURE.md)를 함께 참고하세요.
