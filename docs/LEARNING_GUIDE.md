@@ -69,7 +69,33 @@ graph TB
 
 **단방향 의존성 원칙**: 상위 레이어는 하위 레이어를 알지만, 하위 레이어는 상위 레이어를 절대 참조하지 않아야 합니다. (예: ViewModel은 UI 위젯을 알 수 없음)
 
-### 1.3 소스 폴더 구조 (`lib/src`)
+### 1.3 화면 네비게이션 구조 (Navigation Tree)
+
+앱의 화면 전환 흐름은 아래와 같습니다.
+
+```mermaid
+graph TB
+    subgraph "Navigation Flow"
+        DS["🏠 DashboardScreen<br/>(메인 화면)"]
+        HS["📊 HistoryScreen<br/>(전체 기록)"]
+        SS["⚙️ SettingsScreen<br/>(설정)"]
+        TFS["📝 TransactionFormScreen<br/>(수입/지출 입력)"]
+        ETS["✏️ EditTransactionScreen<br/>(거래 수정)"]
+    end
+
+    DS -->|"Navigator.push"| HS
+    DS -->|"Navigator.push"| SS
+    DS -->|"showModalBottomSheet"| TFS
+    HS -->|"Navigator.push"| ETS
+    
+    style DS fill:#2d1b69,stroke:#BB44FF,color:#fff
+    style HS fill:#1b3a4b,stroke:#5AC8FA,color:#fff
+    style SS fill:#1b3a4b,stroke:#5AC8FA,color:#fff
+    style TFS fill:#3a1b1b,stroke:#FF9500,color:#fff
+    style ETS fill:#3a1b1b,stroke:#FF9500,color:#fff
+```
+
+### 1.4 소스 폴더 구조 (`lib/src`)
 
 ```
 lib/
@@ -332,44 +358,35 @@ ChangeNotifierProxyProvider<PointViewModel, BackupViewModel>(
 
 ### 4.3 이 프로젝트의 Provider 등록 구조
 
-```dart
-// main.dart — Provider 등록 방식
-runApp(
-  MultiProvider(
-    providers: [
-      // ChangeNotifierProvider: 새 인스턴스를 생성하여 주입
-      ChangeNotifierProvider(
-        create: (_) => PointViewModel(PointRepository()),
-      ),
-      ChangeNotifierProvider(create: (_) => SettingsViewModel()),
-
-      // ChangeNotifierProxyProvider: 다른 Provider를 의존하는 Provider
-      // PointViewModel이 변경될 때마다 BackupViewModel이 최신 참조를 받음
-      ChangeNotifierProxyProvider<PointViewModel, BackupViewModel>(
-        create: (ctx) => BackupViewModel(ctx.read<PointViewModel>()),
-        update: (ctx, pointVm, prev) => prev!..updatePointViewModel(pointVm),
-      ),
-    ],
-    child: const MyApp(),
-  ),
-);
-```
+앱 내의 ViewModel들은 서로 독립적이지 않으며, 상호 의존성을 가집니다. 특히 `PointViewModel`은 모든 데이터의 원본(SSOT)으로서 다른 VM들의 중심이 됩니다.
 
 ```mermaid
 graph TD
     MP["MultiProvider (main.dart)"]
-    PVM["PointViewModel\n(전역 SSOT)"]
+    PVM["PointViewModel<br/>(전역 전용 상태)"]
     SVM["SettingsViewModel"]
     BVM["BackupViewModel"]
+    DVM["DashboardViewModel"]
+    HVM["HistoryViewModel"]
 
     MP --> PVM
     MP --> SVM
     MP -->|ProxyProvider: PVM 의존| BVM
-    PVM -->|update 시 ref 전달| BVM
+    
+    %% 화면별 VM 주입
+    PVM -->|생성자 주입| DVM
+    PVM -->|생성자 주입| HVM
 
     style PVM fill:#2d1b69,stroke:#BB44FF,color:#fff
     style BVM fill:#1b2e4b,stroke:#5AC8FA,color:#fff
+    style DVM fill:#1b2e4b,stroke:#5AC8FA,color:#fff
+    style HVM fill:#1b2e4b,stroke:#5AC8FA,color:#fff
 ```
+
+**의존성 주입 패턴**:
+1. **전역 등록**: `main.dart`에서 `MultiProvider`를 통해 앱 전체에서 접근 가능한 VM을 등록합니다.
+2. **ProxyProvider**: `BackupViewModel`처럼 다른 VM의 최신 상태를 실시간으로 참조해야 할 때 사용합니다.
+3. **화면별 주입**: `Navigator.push` 시점에 `ChangeNotifierProvider`를 통해 해당 화면에서만 쓰이는 VM(DVM, HVM 등)을 생성하며, 이때 필요한 전역 VM을 생성자로 전달합니다.
 
 ### 4.3 화면별 Provider 주입 패턴
 
