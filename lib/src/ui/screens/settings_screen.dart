@@ -54,11 +54,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           content: const Text('백업 파일이 생성되었습니다'),
           actions: [
             TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('확인')),
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('확인'),
+            ),
             TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text('공유하기')),
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('공유하기'),
+            ),
           ],
         ),
       );
@@ -99,14 +101,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (_) => AlertDialog(
         title: const Text('잔액 재계산'),
         content: const Text(
-            '모든 거래의 잔액을 처음부터 다시 계산합니다. 이 작업은 데이터 불일치 문제를 해결할 수 있습니다.'),
+          '모든 거래의 잔액을 처음부터 다시 계산합니다. 이 작업은 데이터 불일치 문제를 해결할 수 있습니다.',
+        ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('취소')),
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('취소'),
+          ),
           TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('재계산')),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('재계산'),
+          ),
         ],
       ),
     );
@@ -121,12 +126,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('모든 데이터 삭제'),
-        content: const Text(
-            '모든 포인트 기록이 삭제됩니다. 이 작업은 되돌릴 수 없습니다.'),
+        content: const Text('모든 포인트 기록이 삭제됩니다. 이 작업은 되돌릴 수 없습니다.'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('취소')),
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('취소'),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
@@ -142,8 +147,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _showSnack(String msg) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(msg)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   void _showError(String msg) {
@@ -154,8 +158,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         content: Text(msg),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('확인'))
+            onPressed: () => Navigator.pop(context),
+            child: const Text('확인'),
+          ),
         ],
       ),
     );
@@ -166,216 +171,236 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final pointVM = context.watch<PointViewModel>();
     final backupVM = context.read<BackupViewModel>();
     return Scaffold(
-          backgroundColor: AppColors.background,
-          body: CustomScrollView(
-              slivers: [
-                SliverAppBar(
-                  pinned: true,
-                  title: const Text('설정'),
-                  backgroundColor: AppColors.background,
-                ),
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate([
-                      // ── 헤더 영역
-                      Center(
-                        child: Column(
-                          children: [
-                            Container(
-                              width: 100,
-                              height: 100,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    AppColors.purpleAccent.withValues(alpha: 0.2),
-                                    AppColors.blueAccent.withValues(alpha: 0.1)
-                                  ],
-                                ),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(Icons.settings_rounded,
-                                  size: 50, color: AppColors.purpleAccent),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              '설정',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleLarge
-                                  ?.copyWith(fontWeight: FontWeight.bold),
-                            ),
-                          ],
+      backgroundColor: AppColors.background,
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            pinned: true,
+            title: const Text('설정'),
+            backgroundColor: AppColors.background,
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                // ── 헤더 영역
+                Center(
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              AppColors.purpleAccent.withValues(alpha: 0.2),
+                              AppColors.blueAccent.withValues(alpha: 0.1),
+                            ],
+                          ),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.settings_rounded,
+                          size: 50,
+                          color: AppColors.purpleAccent,
                         ),
                       ),
-                      const SizedBox(height: 24),
-
-                      // ── 포인트 환산 설정
-                      _SectionHeader(
-                          icon: Icons.star_rounded,
-                          label: '포인트 설정',
-                          color: AppColors.orangeAccent),
                       const SizedBox(height: 8),
-                      _SettingsCard(
-                        child: Column(
-                          children: [
-                            Row(
-                              children: [
-                                const Expanded(
-                                  child: Text('1 포인트 가치',
-                                      style: TextStyle(color: AppColors.textSecondary)),
-                                ),
-                                SizedBox(
-                                  width: 100,
-                                  child: TextField(
-                                    controller: _rateCtrl,
-                                    keyboardType: TextInputType.number,
-                                    textAlign: TextAlign.right,
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16),
-                                    decoration: InputDecoration(
-                                      border: OutlineInputBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(10),
-                                        borderSide: BorderSide.none,
-                                      ),
-                                      filled: true,
-                                      fillColor: AppColors.cardDarkElevated,
-                                      isDense: true,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                const Text('원',
-                                    style:
-                                        TextStyle(color: AppColors.textSecondary)),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                const Icon(Icons.info_rounded,
-                                      color: AppColors.blueAccent, size: 14),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    '1 포인트 = ${_rateCtrl.text}원으로 환산됩니다',
-                                    style: const TextStyle(
-                                        fontSize: 12, color: AppColors.textTertiary),
-                                ),
-                              ],
-                            ),
-                          ],
+                      Text(
+                        '설정',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 20),
-
-                      // ── 데이터 백업 설정
-                      _SectionHeader(
-                          icon: Icons.storage_rounded,
-                          label: '백업 및 복원',
-                          color: AppColors.purpleAccent),
-                      const SizedBox(height: 8),
-                      _SettingsCard(
-                        child: Column(
-                          children: [
-                            _ActionRow(
-                              icon: Icons.upload_rounded,
-                              color: AppColors.purpleAccent,
-                              title: '백업하기',
-                              subtitle: '모든 데이터를 파일로 저장합니다',
-                              onTap: () => _backup(backupVM),
-                            ),
-                            const Divider(height: 16, color: AppColors.divider),
-                            _ActionRow(
-                              icon: Icons.download_rounded,
-                              color: AppColors.greenAccent,
-                              title: '복원하기',
-                              subtitle: '백업 파일에서 데이터를 가져옵니다',
-                              onTap: () => _restore(backupVM),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      // ── 앱 정보 섹션
-                      _SectionHeader(
-                          icon: Icons.info_rounded,
-                          label: '앱 정보',
-                          color: AppColors.blueAccent),
-                      const SizedBox(height: 8),
-                      _SettingsCard(
-                        child: Column(
-                          children: [
-                            _InfoRow(
-                                icon: Icons.description_rounded,
-                                title: '앱 버전',
-                                value: '1.0.0',
-                                color: AppColors.greenAccent),
-                            const Divider(height: 16, color: AppColors.divider),
-                            _InfoRow(
-                                icon: Icons.person_rounded,
-                                title: '개발자',
-                                value: 'Myoungwoo Jang',
-                                color: AppColors.purpleAccent),
-                            const Divider(height: 16, color: AppColors.divider),
-                            _InfoRow(
-                                icon: Icons.calendar_today_rounded,
-                                title: '출시일',
-                                value: '2026년 1월',
-                                color: AppColors.orangeAccent),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      // ── 데이터 관리 섹션
-                      _SectionHeader(
-                          icon: Icons.dns_rounded,
-                          label: '데이터 관리',
-                          color: AppColors.blueAccent),
-                      const SizedBox(height: 8),
-                      _SettingsCard(
-                        child: Column(
-                          children: [
-                            _ActionRow(
-                              icon: Icons.sync_rounded,
-                              color: AppColors.blueAccent,
-                              title: '잔액 재계산',
-                              subtitle: '모든 거래의 잔액을 다시 계산합니다',
-                              onTap: () => _recalculate(pointVM),
-                            ),
-                            const Divider(height: 16, color: AppColors.divider),
-                            _ActionRow(
-                              icon: Icons.delete_rounded,
-                              color: AppColors.redAccent,
-                              title: '모든 데이터 삭제',
-                              subtitle: '모든 포인트 기록이 삭제됩니다',
-                              onTap: () => _deleteAll(backupVM),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      // ── 설정 저장 버튼
-                      _SaveButton(onSave: _saveSettings),
-                      const SizedBox(height: 32),
-                    ]),
+                    ],
                   ),
                 ),
-              ],
+                const SizedBox(height: 24),
+
+                // ── 포인트 환산 설정
+                _SectionHeader(
+                  icon: Icons.star_rounded,
+                  label: '포인트 설정',
+                  color: AppColors.orangeAccent,
+                ),
+                const SizedBox(height: 8),
+                _SettingsCard(
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          const Expanded(
+                            child: Text(
+                              '1 포인트 가치',
+                              style: TextStyle(color: AppColors.textSecondary),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 100,
+                            child: TextField(
+                              controller: _rateCtrl,
+                              keyboardType: TextInputType.number,
+                              textAlign: TextAlign.right,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: BorderSide.none,
+                                ),
+                                filled: true,
+                                fillColor: AppColors.cardDarkElevated,
+                                isDense: true,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          const Text(
+                            '원',
+                            style: TextStyle(color: AppColors.textSecondary),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.info_rounded,
+                            color: AppColors.blueAccent,
+                            size: 14,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '1 포인트 = ${_rateCtrl.text}원으로 환산됩니다',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textTertiary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // ── 데이터 백업 설정
+                _SectionHeader(
+                  icon: Icons.storage_rounded,
+                  label: '백업 및 복원',
+                  color: AppColors.purpleAccent,
+                ),
+                const SizedBox(height: 8),
+                _SettingsCard(
+                  child: Column(
+                    children: [
+                      _ActionRow(
+                        icon: Icons.upload_rounded,
+                        color: AppColors.purpleAccent,
+                        title: '백업하기',
+                        subtitle: '모든 데이터를 파일로 저장합니다',
+                        onTap: () => _backup(backupVM),
+                      ),
+                      const Divider(height: 16, color: AppColors.divider),
+                      _ActionRow(
+                        icon: Icons.download_rounded,
+                        color: AppColors.greenAccent,
+                        title: '복원하기',
+                        subtitle: '백업 파일에서 데이터를 가져옵니다',
+                        onTap: () => _restore(backupVM),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // ── 앱 정보 섹션
+                _SectionHeader(
+                  icon: Icons.info_rounded,
+                  label: '앱 정보',
+                  color: AppColors.blueAccent,
+                ),
+                const SizedBox(height: 8),
+                _SettingsCard(
+                  child: Column(
+                    children: [
+                      _InfoRow(
+                        icon: Icons.description_rounded,
+                        title: '앱 버전',
+                        value: '1.0.0',
+                        color: AppColors.greenAccent,
+                      ),
+                      const Divider(height: 16, color: AppColors.divider),
+                      _InfoRow(
+                        icon: Icons.person_rounded,
+                        title: '개발자',
+                        value: 'Myoungwoo Jang',
+                        color: AppColors.purpleAccent,
+                      ),
+                      const Divider(height: 16, color: AppColors.divider),
+                      _InfoRow(
+                        icon: Icons.calendar_today_rounded,
+                        title: '출시일',
+                        value: '2026년 1월',
+                        color: AppColors.orangeAccent,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // ── 데이터 관리 섹션
+                _SectionHeader(
+                  icon: Icons.dns_rounded,
+                  label: '데이터 관리',
+                  color: AppColors.blueAccent,
+                ),
+                const SizedBox(height: 8),
+                _SettingsCard(
+                  child: Column(
+                    children: [
+                      _ActionRow(
+                        icon: Icons.sync_rounded,
+                        color: AppColors.blueAccent,
+                        title: '잔액 재계산',
+                        subtitle: '모든 거래의 잔액을 다시 계산합니다',
+                        onTap: () => _recalculate(pointVM),
+                      ),
+                      const Divider(height: 16, color: AppColors.divider),
+                      _ActionRow(
+                        icon: Icons.delete_rounded,
+                        color: AppColors.redAccent,
+                        title: '모든 데이터 삭제',
+                        subtitle: '모든 포인트 기록이 삭제됩니다',
+                        onTap: () => _deleteAll(backupVM),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // ── 설정 저장 버튼
+                _SaveButton(onSave: _saveSettings),
+                const SizedBox(height: 32),
+              ]),
             ),
-        );
+          ),
+        ],
+      ),
+    );
   }
 }
 
 // ─────────────────────── 헬퍼 위젯 ───────────────────────
 
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader(
-      {required this.icon, required this.label, required this.color});
+  const _SectionHeader({
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
 
   final IconData icon;
   final String label;
@@ -387,9 +412,14 @@ class _SectionHeader extends StatelessWidget {
       children: [
         Icon(icon, color: color, size: 20),
         const SizedBox(width: 8),
-        Text(label,
-            style: TextStyle(
-                fontWeight: FontWeight.bold, color: color, fontSize: 16)),
+        Text(
+          label,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: color,
+            fontSize: 16,
+          ),
+        ),
       ],
     );
   }
@@ -439,16 +469,25 @@ class _ActionRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title,
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold, color: color)),
-                Text(subtitle,
-                    style: const TextStyle(fontSize: 12, color: AppColors.textTertiary)),
+                Text(
+                  title,
+                  style: TextStyle(fontWeight: FontWeight.bold, color: color),
+                ),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textTertiary,
+                  ),
+                ),
               ],
             ),
           ),
-          const Icon(Icons.chevron_right_rounded,
-              color: AppColors.textTertiary, size: 18),
+          const Icon(
+            Icons.chevron_right_rounded,
+            color: AppColors.textTertiary,
+            size: 18,
+          ),
         ],
       ),
     );
@@ -476,8 +515,13 @@ class _InfoRow extends StatelessWidget {
         const SizedBox(width: 10),
         Text(title),
         const Spacer(),
-        Text(value,
-            style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+        Text(
+          value,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            color: AppColors.textSecondary,
+          ),
+        ),
       ],
     );
   }
@@ -511,27 +555,30 @@ class _SaveButtonState extends State<_SaveButton> {
           padding: const EdgeInsets.symmetric(vertical: 18),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-                colors: [Color(0xFF5856D6), AppColors.purpleAccent]),
+              colors: [Color(0xFF5856D6), AppColors.purpleAccent],
+            ),
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
                 color: AppColors.purpleAccent.withValues(alpha: 0.3),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
-              )
+              ),
             ],
           ),
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.check_circle_rounded,
-                  color: Colors.white, size: 22),
+              Icon(Icons.check_circle_rounded, color: Colors.white, size: 22),
               SizedBox(width: 8),
-              Text('설정 저장',
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16)),
+              Text(
+                '설정 저장',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
             ],
           ),
         ),
