@@ -65,7 +65,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       );
       if (result == true) {
-        await Share.shareXFiles([XFile(file.path)]);
+        if (!mounted) return;
+
+        // iPad 및 일부 iOS 환경에서 공유창(Popover)이 팝업될 위치 기준을 설정하여
+        // sharePositionOrigin argument must be set 에러 크래시를 방지합니다.
+        final box = context.findRenderObject() as RenderBox?;
+        final rect = box != null
+            ? box.localToGlobal(Offset.zero) & box.size
+            : null;
+
+        await Share.shareXFiles(
+          [XFile(file.path)],
+          sharePositionOrigin: rect,
+        );
       }
     } catch (e) {
       HapticFeedback.heavyImpact();

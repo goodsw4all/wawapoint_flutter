@@ -10,6 +10,8 @@ import '../app_theme.dart';
 import 'history_screen.dart';
 import 'settings_screen.dart';
 import 'transaction_form_screen.dart';
+import 'edit_transaction_screen.dart';
+import '../widgets/transaction_detail_dialog.dart';
 
 /// 앱의 메인 화면으로, 잔액 확인 및 주요 기능(수입/지출 입력)에 접근할 수 있습니다.
 class DashboardScreen extends StatelessWidget {
@@ -329,6 +331,31 @@ class _RecentTransactions extends StatelessWidget {
   const _RecentTransactions({required this.vm});
   final PointViewModel vm;
 
+  /// 기록을 삭제할 때 확인 팝업을 보여줍니다.
+  void _showDeleteConfirm(BuildContext context, PointViewModel vm, PointRecord record) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('정말 삭제하시겠어요?'),
+        content: Text('「${record.reason}」 기록이 삭제됩니다.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('취소')),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              HapticFeedback.lightImpact();
+              vm.deleteRecord(record);
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('삭제'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -386,7 +413,25 @@ class _RecentTransactions extends StatelessWidget {
               .map(
                 (r) => Padding(
                   padding: const EdgeInsets.only(bottom: 10),
-                  child: TransactionTile(record: r),
+                  child: TransactionTile(
+                    record: r,
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      TransactionDetailDialog.show(
+                        context,
+                        record: r,
+                        onEdit: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => EditTransactionScreen(record: r),
+                            ),
+                          );
+                        },
+                        onDelete: () => _showDeleteConfirm(context, vm, r),
+                      );
+                    },
+                  ),
                 ),
               ),
       ],
@@ -430,8 +475,9 @@ class _EmptyState extends StatelessWidget {
 // ─────────────────────── 공용 거래 항목 타일 위젯 ───────────────────────
 
 class TransactionTile extends StatelessWidget {
-  const TransactionTile({super.key, required this.record});
+  const TransactionTile({super.key, required this.record, this.onTap});
   final PointRecord record;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -439,100 +485,103 @@ class TransactionTile extends StatelessWidget {
     final accent = isIncome ? AppColors.greenAccent : AppColors.redAccent;
     final pm = PointManager();
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.cardDark,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        children: [
-          // ── 아이콘 영역
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              color: accent.withValues(alpha: 0.15),
-              shape: BoxShape.circle,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.cardDark,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          children: [
+            // ── 아이콘 영역
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: accent.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                isIncome
+                    ? Icons.arrow_downward_rounded
+                    : Icons.arrow_upward_rounded,
+                color: accent,
+                size: 24,
+              ),
             ),
-            child: Icon(
-              isIncome
-                  ? Icons.arrow_downward_rounded
-                  : Icons.arrow_upward_rounded,
-              color: accent,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 14),
-          // ── 거래 정보 (사유, 날짜)
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  record.reason,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
-                    color: AppColors.textPrimary,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 5),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.calendar_month_rounded,
-                      size: 12,
-                      color: AppColors.textTertiary,
+            const SizedBox(width: 14),
+            // ── 거래 정보 (사유, 날짜)
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    record.reason,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                      color: AppColors.textPrimary,
                     ),
-                    const SizedBox(width: 4),
-                    Text(
-                      DateFormat('MMMM d, yyyy').format(record.date),
-                      style: const TextStyle(
-                        fontSize: 12,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 5),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.calendar_month_rounded,
+                        size: 12,
                         color: AppColors.textTertiary,
                       ),
+                      const SizedBox(width: 4),
+                      Text(
+                        DateFormat('MMMM d, yyyy').format(record.date),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textTertiary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            // ── 금액 및 잔액 스냅샷
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  isIncome
+                      ? '+${pm.formatPoints(record.amount)}'
+                      : '-${pm.formatKRW(record.amount)}',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                    color: accent,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppColors.cardDarkElevated,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '잔액: ${pm.formatKRW(record.balanceAfter)}',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: AppColors.textTertiary,
                     ),
-                  ],
+                  ),
                 ),
               ],
             ),
-          ),
-          const SizedBox(width: 8),
-          // ── 금액 및 잔액 스냅샷
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                isIncome
-                    ? '+${pm.formatPoints(record.amount)}'
-                    : '-${pm.formatKRW(record.amount)}',
-                style: TextStyle(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 16,
-                  color: accent,
-                ),
-              ),
-              const SizedBox(height: 5),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: AppColors.cardDarkElevated,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  '잔액: ${pm.formatKRW(record.balanceAfter)}',
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: AppColors.textTertiary,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

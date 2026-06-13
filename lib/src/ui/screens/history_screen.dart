@@ -10,6 +10,7 @@ import '../../data/point_manager.dart';
 import '../app_theme.dart';
 import 'dashboard_screen.dart';
 import 'edit_transaction_screen.dart';
+import '../widgets/transaction_detail_dialog.dart';
 
 
 /// 앱의 모든 거래 기록을 보여주고 통계를 제공하는 화면입니다.
@@ -474,7 +475,18 @@ class _TransactionList extends StatelessWidget {
                 ),
                 child: GestureDetector(
                   onLongPress: () => _showMenu(context, r),
-                  child: TransactionTile(record: r),
+                  child: TransactionTile(
+                    record: r,
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      TransactionDetailDialog.show(
+                        context,
+                        record: r,
+                        onEdit: () => onEdit(r),
+                        onDelete: () => onDelete(r),
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
