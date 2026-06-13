@@ -641,6 +641,7 @@ class RecordDatabase {
 
 1. **PointManager**: 포인트↔원화 환산 전담. `SharedPreferences`를 통해 설정값 영속화.
 2. **BackupManager**: `BackupData` 모델을 기반으로 JSON 직렬화/역직렬화 및 파일 시스템 입출력 담당.
+   - *참고 (JSON 백업 선정 이유)*: 로컬 SQLite 데이터베이스 파일(`.db`)을 그대로 복사하여 백업하지 않고 JSON 구조화 방식을 사용합니다. 이는 크로스 플랫폼 호환성 확보, 앱 스키마 업데이트 시 하위 호환성 및 마이그레이션 관리, 복원 전 데이터 유효성(Validation) 사전 검사, 그리고 기존 레코드와의 안전한 데이터 병합(Merge) 연산을 가능하게 하기 위함입니다.
 
 ---
 
