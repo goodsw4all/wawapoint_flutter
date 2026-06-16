@@ -1060,7 +1060,26 @@ flutter run
 
 ---
 
----
+### ❌ iPad 등 iOS 환경에서 share_plus 파일 공유 시 크래시 발생
+
+**원인**: iPadOS 등 팝오버(Popover) 스타일의 공유 창을 사용하는 iOS 환경에서 공유 창의 물리적 팝업 기준 위치(`sharePositionOrigin`)를 지정하지 않아 `sharePositionOrigin argument must be set` 에러와 함께 앱이 비정상 종료되는 현상입니다.
+
+**해결책**:
+공유 버튼이 위치한 UI context를 기반으로 렌더 객체(`RenderBox`)의 물리적 좌표와 크기 영역을 계산한 뒤, `sharePositionOrigin` 매개변수에 전달하여 해결합니다.
+
+```dart
+// 1. 위젯의 RenderBox 좌표 구하기
+final box = context.findRenderObject() as RenderBox?;
+final rect = box != null
+    ? box.localToGlobal(Offset.zero) & box.size
+    : null;
+
+// 2. sharePositionOrigin을 설정하여 안전하게 공유 실행
+await Share.shareXFiles(
+  [XFile(file.path)],
+  sharePositionOrigin: rect,
+);
+```
 
 ## Chapter 13. 고급 주제 (CustomPainter & Native)
 

@@ -570,6 +570,7 @@ graph TD
     SL --> RT["_RecentTransactions<br/>최근 3건"]
     RT --> TT["TransactionTile × 3<br/>(재사용 위젯)"]
     RT --> ES["_EmptyState<br/>(기록 없을 때)"]
+    TT --> TDD["TransactionDetailDialog<br/>(상세 팝업)"]
 
     style DS fill:#2d1b69,stroke:#BB44FF,color:#fff
     style BC fill:#1a1a2e,stroke:#DD22CC,color:#fff
@@ -609,6 +610,7 @@ graph TD
     SP --> TL["_TransactionList<br/>전체 기록"]
     TL --> D["Dismissible<br/>(스와이프 삭제)"]
     D --> TT["TransactionTile"]
+    TT --> TDD["TransactionDetailDialog<br/>(상세 팝업)"]
 
     style HS fill:#1b3a4b,stroke:#5AC8FA,color:#fff
     style SC fill:#1a1a2e,stroke:#34C759,color:#fff
@@ -627,6 +629,7 @@ graph TD
 | **롱프레스 메뉴** | 수정/삭제 옵션이 포함된 BottomSheet |
 | **잔액 재계산** | AppBar의 PopupMenuButton에서 일괄 재계산 |
 | **데이터 검증** | `validateBalances()`로 불일치 검출 → 수정 제안 |
+| **기록 상세 조회** | 기록 타일(`TransactionTile`) 클릭 시 상세 내용이 담긴 카드 형태의 `TransactionDetailDialog`를 호출하여 전체 정보 제공 및 즉각적인 수정/삭제 연계 제공 |
 
 #### ViewModel 사용
 
@@ -696,6 +699,17 @@ graph TD
 | `PointViewModel` | `context.watch` | `recalculateAllBalances()` |
 | `BackupViewModel` | `context.read` | `exportBackup()`, `importBackup()`, `clearAllData()` |
 | `SettingsViewModel` | `context.read` | `formattedRate`, `setRate()` |
+
+### 8.7 TransactionDetailDialog (기록 상세 팝업)
+
+**파일**: `lib/src/ui/widgets/transaction_detail_dialog.dart`
+
+사용자가 개별 거래 기록을 탭했을 때 상세 정보를 보여주는 다목적 모달 팝업입니다.
+
+#### 주요 특징
+- **동적 가공**: `TransactionType`에 따라 수입(포인트 단위 및 KRW 환산 값) 및 지출(원화 및 포인트 환산 값)을 명확한 레이아웃으로 구분하여 렌더링합니다.
+- **다이렉트 액션**: 다이얼로그 내에서 `수정` 또는 `삭제` 버튼을 누르면, 호출 화면의 이벤트 핸들러(`onEdit`, `onDelete`)로 즉각 위임 처리가 가능합니다.
+- **디자인 조화**: AMOLED 다크 테마 컨셉에 맞는 입체적인 배경 디자인(`AppColors.cardDarkElevated`)과 그라데이션 및 원형 아이콘 장식을 제공합니다.
 
 ---
 
