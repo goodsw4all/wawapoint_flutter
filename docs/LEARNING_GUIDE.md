@@ -16,7 +16,7 @@
 7. [Chapter 7: 실전 레이아웃 & Sliver 시스템](#7-실전-레이아웃--sliver-시스템)
 8. [Chapter 8: CLI 및 빌드 자동화](#8-cli-및-빌드-자동화)
 9. [Chapter 9: 시퀀스 다이어그램: 앱 초기화](#9-시퀀스-다이어그램-앱-초기화)
-10. [Chapter 10: 시퀀스 다이어그램: MVVM CRUD 흐름](#10-시퀀스-다이어그램-mvvm-crud-흐름)
+10. [Chapter 10: 시퀀스 다이어그램: 비즈니스 파이프라인](#10-시퀀스-다이어그램-비즈니스-파이프라인)
 11. [Chapter 11: 테스트 전략 및 가이드](#11-테스트-전략-및-가이드)
 12. [Chapter 12: 트러블슈팅 매뉴얼](#12-트러블슈팅-매뉴얼)
 13. [Chapter 13: 고급 주제 (CustomPainter & Native)](#13-고급-주제-custompainter--native)
@@ -162,6 +162,35 @@ String getMessage(int status) => switch (status) {
   404 => 'Not Found',
   _ => 'Unknown'
 };
+```
+
+#### 💡 실전 적용 사례: Named Records
+WaWa Point에서는 백업 파일을 불러온 뒤, 유효성 검사 결과(성공 여부, 데이터 건수, 백업 일시)를 한 번에 구조화된 형태의 타입으로 반환하기 위해 **Named Records**를 활용하고 있습니다.
+(자세한 구현 코드는 [backup_manager.dart](file:///Volumes/Development/Projects/Flutter/WaWa%20Point/wawapoint_flutter/lib/src/data/backup_manager.dart)를 참고하세요)
+
+```dart
+// 1. 함수 정의 (Named Record 반환)
+({bool isValid, int recordCount, DateTime? exportDate}) validateBackupData(String jsonString) {
+  try {
+    final Map<String, dynamic> json = jsonDecode(jsonString);
+    final backup = BackupData.fromJson(json);
+    return (
+      isValid: true,
+      recordCount: backup.records.length,
+      exportDate: backup.exportDate,
+    );
+  } catch (_) {
+    return (isValid: false, recordCount: 0, exportDate: null);
+  }
+}
+
+// 2. 구조 분해 할당(Destructuring)을 통한 사용
+final (isValid: ok, recordCount: count, exportDate: date) = 
+    BackupManager().validateBackupData(jsonContent);
+
+if (ok) {
+  print('$count 개의 거래 기록 복원 가능 (백업 시점: $date)');
+}
 ```
 
 ### 2.2 Mixins & Extensions
@@ -467,7 +496,7 @@ class PointRecord {
 }
 ```
 
-### 5.2 Provider/ViewModel Layer — `PointViewModel`
+### 5.3 Provider/ViewModel Layer — `PointViewModel`
 
 앱 전역의 `Single Source of Truth`입니다. 잔액과 전체 기록을 관리합니다.
 
@@ -504,7 +533,7 @@ class PointViewModel extends ChangeNotifier {
 }
 ```
 
-### 5.3 Repository Layer — `PointRepository`
+### 5.4 Repository Layer — `PointRepository`
 
 ViewModel이 데이터 소스의 세부 구현을 몰라도 되도록 추상화합니다.
 
@@ -534,7 +563,7 @@ class PointRepository {
 }
 ```
 
-### 5.4 UI Layer — `_BalanceCard` (Dashboard)
+### 5.5 UI Layer — `_BalanceCard` (Dashboard)
 
 `StatelessWidget`이지만 상위 `Consumer`에서 전달받은 `scale`로 애니메이션이 동작합니다.
 
@@ -576,6 +605,70 @@ class _BalanceCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+### 5.6 UI Layer — `TransactionDetailDialog` (기록 상세 팝업)
+
+사용자가 개별 거래 기록을 탭했을 때 상세 정보를 보여주는 프리미엄 팝업 카드입니다. `BackdropFilter`를 사용한 글래스모피즘 블러 효과와 `showGeneralDialog`를 통한 바운스 애니메이션을 제공합니다.
+(자세한 구현 코드는 [transaction_detail_dialog.dart](file:///Volumes/Development/Projects/Flutter/WaWa%20Point/wawapoint_flutter/lib/src/ui/widgets/transaction_detail_dialog.dart)를 참고하세요)
+
+```dart
+class TransactionDetailDialog extends StatelessWidget {
+  final PointRecord record;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
+
+  const TransactionDetailDialog({
+    super.key,
+    required this.record,
+    this.onEdit,
+    this.onDelete,
+  });
+
+  // showGeneralDialog를 사용해 등장 시 바운싱 Scale & Fade 트랜지션 애니메이션 적용
+  static Future<void> show(
+    BuildContext context, {
+    required PointRecord record,
+    VoidCallback? onEdit,
+    VoidCallback? onDelete,
+  }) {
+    return showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Dismiss Detail Dialog',
+      barrierColor: Colors.black.withValues(alpha: 0.6),
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (context, anim1, anim2) {
+        return TransactionDetailDialog(
+          record: record,
+          onEdit: onEdit,
+          onDelete: onDelete,
+        );
+      },
+      transitionBuilder: (context, anim1, anim2, child) {
+        return Transform.scale(
+          scale: CurvedAnimation(
+            parent: anim1,
+            curve: Curves.easeOutBack,
+          ).value,
+          child: FadeTransition(
+            opacity: anim1,
+            child: child,
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // BackdropFilter를 활용해 뒷배경에 10px 블러 처리 적용
+    return BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+      child: Center(
+        // 상세 데이터 정보 렌더링 및 수정/삭제 위임 이벤트 처리...
       ),
     );
   }
@@ -912,6 +1005,38 @@ sequenceDiagram
     BM-->>BVM: List<PointRecord>
     BVM->>DB: overwriteAll(records)
     BVM->>PVM: loadRecords() (상태 동기화)
+### 10.4 상세 정보 조회 및 다이렉트 액션 흐름
+
+거래 타일을 클릭하여 상세 팝업을 띄우고, 팝업 안에서 수정 혹은 삭제 버튼을 눌러 부모 화면의 이벤트 핸들러로 작업을 위임하는 상세 흐름입니다.
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant V as HistoryView / DashboardView
+    participant D as TransactionDetailDialog
+    participant PVM as PointViewModel
+    
+    User->>V: 거래 기록 항목 탭
+    V->>D: TransactionDetailDialog.show(record, onEdit, onDelete)
+    D->>D: BackdropFilter 블러 + 바운스 애니메이션 실행
+    D-->>User: 상세 정보 및 액션 버튼(수정, 삭제, 확인) 표시
+    
+    alt User가 삭제 클릭
+        User->>D: "삭제" 버튼 탭
+        D->>V: onDelete() 콜백 호출 (부모 위임)
+        Note over D: Navigator.pop(context)로 상세 창 닫힘
+        V->>V: _showDeleteConfirm() 확인 모달 출력
+        User->>V: 최종 삭제 승인
+        V->>PVM: deleteRecord(record)
+        PVM->>PVM: recalculateAllBalances() & notifyListeners()
+        PVM-->>V: UI 최종 갱신
+    else User가 수정 클릭
+        User->>D: "수정" 버튼 탭
+        D->>V: onEdit() 콜백 호출 (부모 위임)
+        Note over D: Navigator.pop(context)로 상세 창 닫힘
+        V->>V: Navigator.push(EditTransactionScreen)
+        Note over V: 수정 폼 이동...
+    end
 ```
 
 ---
@@ -1008,26 +1133,49 @@ Widget build(BuildContext context) {
 
 ---
 
-### ❌ `showDialog` 내부에서 Provider 접근 실패
+### ❌ `showDialog` 또는 `showGeneralDialog` 내부에서 Provider 접근 실패
 
-**원인**: 다이얼로그의 context는 원래 위젯 트리와 다름
+**원인**: 다이얼로그나 바텀시트가 띄워질 때의 `BuildContext`는 새로운 라우트(Route) 트리 아래에 배치되므로, 기존 위젯 트리 상위에 있던 Provider에 직접 `context.read<T>()`로 접근하면 `ProviderNotFoundException`이 발생합니다.
 
+**해결책 A**: 다이얼로그 빌더를 실행하기 전에 필요한 ViewModel 인스턴스 참조를 변수에 저장해 두고 클로저 형식으로 활용합니다.
 ```dart
-// ✅ 해결법: 다이얼로그 호출 전에 Provider 참조를 저장
 Future<void> _showConfirmDialog(BuildContext context) async {
-  final vm = context.read<PointViewModel>(); // ← 호출 전에 저장
+  final vm = context.read<PointViewModel>(); // ← 다이얼로그 빌드 전에 미리 참조 획득
   await showDialog(
     context: context,
     builder: (_) => AlertDialog(
       actions: [
         TextButton(
-          onPressed: () => vm.deleteAll(), // 저장된 참조 사용
+          onPressed: () => vm.deleteAll(), // 획득한 참조 사용
           child: const Text('삭제'),
         ),
       ],
     ),
   );
 }
+```
+
+**해결책 B (권장 - 관심사 분리)**: 커스텀 다이얼로그(예: `TransactionDetailDialog`)를 만들 때는 내부에서 직접 특정 Provider에 종속되지 않도록 설계하고, 동작이 필요한 이벤트를 콜백 함수(`VoidCallback? onEdit`, `onDelete`)로 받아 외부(부모 뷰)에서 처리하도록 위임합니다.
+```dart
+// 1. 다이얼로그는 순수하게 콜백만 호출하도록 설계
+class CustomDetailDialog extends StatelessWidget {
+  final VoidCallback? onEdit;
+  
+  const CustomDetailDialog({super.key, this.onEdit});
+  
+  // ...
+  // Button 탭 시: onEdit?.call()
+}
+
+// 2. 호출처(부모 뷰)에서 Provider가 유효한 context를 기반으로 콜백 작성
+CustomDetailDialog.show(
+  context,
+  onEdit: () {
+    // 부모 context에는 PointViewModel이 주입되어 있으므로 안전하게 접근 가능
+    final vm = context.read<PointViewModel>();
+    Navigator.push(context, MaterialPageRoute(builder: (_) => EditScreen(vm: vm)));
+  },
+);
 ```
 
 ---

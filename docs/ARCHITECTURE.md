@@ -18,14 +18,15 @@
 5. [데이터 흐름](#5-데이터-흐름)
 6. [Model 계층](#6-model-계층)
 7. [ViewModel 계층](#7-viewmodel-계층)
-8. [View 계층 (Screens)](#8-view-계층-screens)
-9. [Data / Service 계층](#9-data--service-계층)
-10. [디자인 시스템](#10-디자인-시스템)
-11. [Provider 의존성 그래프](#11-provider-의존성-그래프)
-12. [데이터 영속성 전략](#12-데이터-영속성-전략)
-13. [백업 / 복원 파이프라인](#13-백업--복원-파이프라인)
-14. [화면 네비게이션](#14-화면-네비게이션)
-15. [외부 의존성](#15-외부-의존성)
+8. [Repository 계층](#8-repository-계층)
+9. [View 계층 (Screens)](#9-view-계층-screens)
+10. [Data / Service 계층](#10-data--service-계층)
+11. [디자인 시스템](#11-디자인-시스템)
+12. [Provider 의존성 그래프](#12-provider-의존성-그래프)
+13. [데이터 영속성 전략](#13-데이터-영속성-전략)
+14. [백업 / 복원 파이프라인](#14-백업--복원-파이프라인)
+15. [화면 네비게이션](#15-화면-네비게이션)
+16. [외부 의존성](#16-외부-의존성)
 
 ---
 
@@ -410,72 +411,83 @@ classDiagram
         +List~PointRecord~ records
         +double currentBalance
         +String formattedBalance
+        +String formattedPoints
+        +double currentPoints
         +loadRecords() Future~void~
         +addPointIncome(int, String) Future~void~
         +addExpense(double, String) Future~bool~
         +deleteRecord(PointRecord) Future~void~
         +updateRecord(PointRecord, double, String) Future~void~
+        +recalculateAllBalances() Future~void~
+        +validateBalances() List~String~
     }
 
     class HistoryViewModel {
-        -PointViewModel _pointViewModel
         +TimePeriod selectedPeriod
-        +List~PointRecord~ filteredRecords
-        +groupExpensesByDay() Map
+        +setPeriod(TimePeriod) void
+        +getFilteredRecords(List) List
+        +calculateTotalIncome(List) double
+        +calculateTotalExpense(List) double
+        +groupExpensesByDay(List) Map
     }
 
     class TransactionFormViewModel {
-        -PointViewModel _pointViewModel
+        +TransactionType transactionType
+        +PointViewModel pointViewModel
+        -String _amount
+        -String _reason
         +String amount
         +String reason
+        +bool isIncome
         +bool isValid
+        +setAmount(String) void
+        +setReason(String) void
+        +increaseAmount() void
+        +decreaseAmount() void
         +save() Future~bool~
+        +String conversionHint
     }
 
     class DashboardViewModel {
-        -PointViewModel _pointViewModel
+        +PointViewModel pointViewModel
+        -double _balanceScale
+        -double _prevBalance
         +double balanceScale
-        +checkAndTriggerAnimation() bool
+        -_onPointModelChanged() void
+        -_triggerBalanceScaleAnimation() void
+    }
+
+    class BackupViewModel {
+        -PointViewModel _pointViewModel
+        +exportBackup() Future~File~
+        +importBackup(String) Future~int~
+        +clearAllData() Future~void~
+    }
+
+    class SettingsViewModel {
+        -double _pointRate
+        +double pointRate
+        +String formattedRate
+        +load() Future~void~
+        +setRate(double) Future~bool~
     }
 
     PointViewModel <|-- ChangeNotifier
     HistoryViewModel <|-- ChangeNotifier
     TransactionFormViewModel <|-- ChangeNotifier
     DashboardViewModel <|-- ChangeNotifier
+    BackupViewModel <|-- ChangeNotifier
+    SettingsViewModel <|-- ChangeNotifier
 
-    HistoryViewModel --> PointViewModel
     TransactionFormViewModel --> PointViewModel
     DashboardViewModel --> PointViewModel
+    BackupViewModel --> PointViewModel
     PointViewModel --> PointRepository
 ```
 
 ### 7.2 PointViewModel — 전역 상태 관리
 
 거래 데이터의 원본(Single Source of Truth)과 전체 잔액을 관리합니다. 모든 데이터 변경 요청은 최종적으로 이 ViewModel을 통해 처리됩니다.
-
-### 7.3 Screen-specific ViewModels
-
-각 화면의 복잡한 UI 로직과 일시적인 상태를 관리합니다.
-- **HistoryViewModel**: 필터링, 통계, 차트 데이터 가공
-- **TransactionFormViewModel**: 입력 폼 상태, 유효성 검사, 저장 프로세스
-- **DashboardViewModel**: 애니메이션 트리거, 대시보드 전용 시각적 상태
-    - *특이사항*: 런타임 예외 방지를 위해 `PointViewModel`을 직접 `addListener`로 구독하여, 빌드 시점이 아닌 데이터 변경 시점에 독립적으로 애니메이션을 트리거함.
-
----
-
-## 8. Repository 계층
-
-### 8.1 PointRepository
-
-**파일**: `lib/src/repositories/point_repository.dart`
-
-데이터의 영속성(Persistence)을 전담하며, 다양한 데이터 소스 간의 중재자 역할을 합니다.
-
-| 책임 | 설명 |
-|------|------|
-| **추상화** | ViewModel이 SQLite나 File System에 직접 접근하지 않도록 격리 |
-| **마이그레이션** | 앱 초기 실행 시 레거시 JSON 데이터를 SQLite로 자동 이관 및 원본 삭제 |
-| **무결성** | 데이터 저장/읽기 시 형식 검증 및 일관성 유지 (잔액 재계산 포함) |
 
 ### 7.3 BackupViewModel — 백업/복원
 
@@ -522,11 +534,35 @@ ChangeNotifierProxyProvider<PointViewModel, BackupViewModel>(
 | `pointRate` | `double` | 1 포인트당 원화 가치 |
 | `formattedRate` | `String` | 소수점 제거된 표시용 문자열 |
 
+### 7.5 Screen-specific ViewModels
+
+각 화면의 복잡한 UI 로직과 일시적인 상태를 관리합니다.
+- **HistoryViewModel**: 필터링, 통계, 차트 데이터 가공
+- **TransactionFormViewModel**: 입력 폼 상태, 유효성 검사, 저장 프로세스
+- **DashboardViewModel**: 애니메이션 트리거, 대시보드 전용 시각적 상태
+    - *특이사항*: 런타임 예외 방지를 위해 `PointViewModel`을 직접 `addListener`로 구독하여, 빌드 시점이 아닌 데이터 변경 시점에 독립적으로 애니메이션을 트리거함.
+
 ---
 
-## 8. View 계층 (Screens)
+## 8. Repository 계층
 
-### 8.1 화면 구성도
+### 8.1 PointRepository
+
+**파일**: `lib/src/repositories/point_repository.dart`
+
+데이터의 영속성(Persistence)을 전담하며, 다양한 데이터 소스 간의 중재자 역할을 합니다.
+
+| 책임 | 설명 |
+|------|------|
+| **추상화** | ViewModel이 SQLite나 File System에 직접 접근하지 않도록 격리 |
+| **마이그레이션** | 앱 초기 실행 시 레거시 JSON 데이터를 SQLite로 자동 이관 및 원본 삭제 |
+| **무결성** | 데이터 저장/읽기 시 형식 검증 및 일관성 유지 (잔액 재계산 포함) |
+
+---
+
+## 9. View 계층 (Screens)
+
+### 9.1 화면 구성도
 
 ```mermaid
 graph TB
@@ -550,7 +586,7 @@ graph TB
     style ETS fill:#3a1b1b,stroke:#FF9500,color:#fff
 ```
 
-### 8.2 DashboardScreen (메인 대시보드)
+### 9.2 DashboardScreen (메인 대시보드)
 
 **파일**: `lib/src/ui/screens/dashboard_screen.dart`
 
@@ -592,7 +628,7 @@ graph TD
 |-----------|-----------|---------------------|
 | `Consumer<PointViewModel>` | build() 전체 | `currentBalance`, `formattedBalance`, `formattedPoints`, `records` |
 
-### 8.3 HistoryScreen (전체 기록)
+### 9.3 HistoryScreen (전체 기록)
 
 **파일**: `lib/src/ui/screens/history_screen.dart`
 
@@ -637,7 +673,7 @@ graph TD
 |-----------|---------------------|
 | `Consumer<PointViewModel>` | `records`, `deleteRecord()`, `validateBalances()`, `recalculateAllBalances()` |
 
-### 8.4 TransactionFormScreen (수입/지출 입력)
+### 9.4 TransactionFormScreen (수입/지출 입력)
 
 **파일**: `lib/src/ui/screens/transaction_form_screen.dart`
 
@@ -659,7 +695,7 @@ graph TD
 | `context.read<PointViewModel>()` | `addPointIncome()`, `addExpense()` |
 | `Consumer<PointViewModel>` (중첩) | `formattedBalance` (지출 모드에서 잔액 표시) |
 
-### 8.5 EditTransactionScreen (거래 수정)
+### 9.5 EditTransactionScreen (거래 수정)
 
 **파일**: `lib/src/ui/screens/edit_transaction_screen.dart`
 
@@ -677,7 +713,7 @@ graph TD
 |-----------|---------------------|
 | `context.read<PointViewModel>()` | `updateRecord()` |
 
-### 8.6 SettingsScreen (설정)
+### 9.6 SettingsScreen (설정)
 
 **파일**: `lib/src/ui/screens/settings_screen.dart`
 
@@ -700,7 +736,7 @@ graph TD
 | `BackupViewModel` | `context.read` | `exportBackup()`, `importBackup()`, `clearAllData()` |
 | `SettingsViewModel` | `context.read` | `formattedRate`, `setRate()` |
 
-### 8.7 TransactionDetailDialog (기록 상세 팝업)
+### 9.7 TransactionDetailDialog (기록 상세 팝업)
 
 **파일**: `lib/src/ui/widgets/transaction_detail_dialog.dart`
 
@@ -713,9 +749,9 @@ graph TD
 
 ---
 
-## 9. Data / Service 계층
+## 10. Data / Service 계층
 
-### 9.1 전체 서비스 구조
+### 10.1 전체 서비스 구조
 
 ```mermaid
 classDiagram
@@ -744,7 +780,7 @@ classDiagram
     PointRepository --> PointManager
 ```
 
-### 9.2 RecordDatabase — SQLite 래퍼
+### 10.2 RecordDatabase — SQLite 래퍼
 
 **파일**: `lib/src/data/record_database.dart`
   
@@ -780,7 +816,7 @@ CREATE TABLE records (
 - **iOS**: `NSDocumentsDirectory/../Library/Application Support/databases/wawapoint.db`  
 - **Android**: `/data/data/com.example.wawapoint/databases/wawapoint.db`
 
-### 9.3 PointManager — 포인트 환산 유틸
+### 10.3 PointManager — 포인트 환산 유틸
 
 **파일**: `lib/src/data/point_manager.dart`
   
@@ -812,7 +848,7 @@ KRW = 포인트 × pointToKRWRate
 
 `SharedPreferences`의 `pointToKRWRate` 키에 환산율을 저장합니다.
 
-### 9.4 BackupManager — 백업 직렬화
+### 10.4 BackupManager — 백업 직렬화
 
 **파일**: `lib/src/data/backup_manager.dart`
   
@@ -856,13 +892,13 @@ KRW = 포인트 × pointToKRWRate
 
 ---
 
-## 10. 디자인 시스템
+## 11. 디자인 시스템
 
 **파일**: `lib/src/ui/app_theme.dart`
 
 AMOLED 친화적인 순수 블랙 (#000000) 기반 다크 테마 디자인 시스템입니다.
 
-### 10.1 색상 체계
+### 11.1 색상 체계
 
 ```mermaid
 graph LR
@@ -903,7 +939,7 @@ graph LR
     style TT fill:#636366,stroke:#fff,color:#fff
 ```
 
-### 10.2 그라데이션
+### 11.2 그라데이션
 
 | 이름 | 색상 | 용도 |
 |------|------|------|
@@ -913,7 +949,7 @@ graph LR
 | `saveButton` | #5856D6 → #BB44FF | 저장 버튼 |
 | `purpleGlow` | #1A0A2E → #0D0D0D | 배경 글로우 효과 |
 
-### 10.3 데코레이션 프리셋
+### 11.3 데코레이션 프리셋
 
 | 이름 | 설명 |
 |------|------|
@@ -922,14 +958,14 @@ graph LR
 | `AppDecorations.balanceCard()` | 잔액 카드 (보라색 테두리 + 그림자) |
 | `AppDecorations.pill()` | 알약형 컨테이너 (radius 20) |
 
-### 10.4 주요 컴포넌트 가이드
+### 11.4 주요 컴포넌트 가이드
 
 #### 콤팩트 액션 버튼 (_ActionButton)
 세로 공간 효율을 위해 로고 옆에 텍스트가 오는 가로형(Row) 레이아웃을 채택하고, 가독성을 위해 아이콘에 `weight: 900` (Bold) 및 명시적인 `alignment: Alignment.center`를 적용함.
 
 ---
 
-## 11. Provider 의존성 그래프
+## 12. Provider 의존성 그래프
 
 ```mermaid
 graph TD
@@ -974,7 +1010,7 @@ graph TD
 
 ---
 
-## 12. 데이터 영속성 전략
+## 13. 데이터 영속성 전략
 
 ```mermaid
 graph TB
@@ -1010,9 +1046,9 @@ graph TB
 
 ---
 
-## 13. 백업 / 복원 파이프라인
+## 14. 백업 / 복원 파이프라인
 
-### 13.1 백업 파이프라인
+### 14.1 백업 파이프라인
 
 ```mermaid
 flowchart LR
@@ -1028,7 +1064,7 @@ flowchart LR
     style F fill:#3a1b1b,stroke:#FF9500,color:#fff
 ```
 
-### 13.2 복원 파이프라인
+### 14.2 복원 파이프라인
 
 ```mermaid
 flowchart LR
@@ -1049,7 +1085,7 @@ flowchart LR
 
 ---
 
-## 14. 화면 네비게이션
+## 15. 화면 네비게이션
 
 ```mermaid
 stateDiagram-v2
@@ -1078,9 +1114,9 @@ stateDiagram-v2
 
 ---
 
-## 15. 외부 의존성
+## 16. 외부 의존성
 
-### 15.1 런타임 의존성
+### 16.1 런타임 의존성
 
 | 패키지 | 버전 | 용도 | 사용처 |
 |--------|------|------|--------|
@@ -1096,7 +1132,7 @@ stateDiagram-v2
 | `fl_chart` | ^0.69.0 | 차트 시각화 | HistoryScreen |
 | `cupertino_icons` | ^1.0.8 | iOS 스타일 아이콘 | 전체 UI |
 
-### 15.2 개발 의존성
+### 16.2 개발 의존성
 
 | 패키지 | 버전 | 용도 |
 |--------|------|------|
