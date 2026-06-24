@@ -1,10 +1,10 @@
 # ProxyProvider 의존성 주입 🔌
 
-앱이 조금만 커져도 **"ViewModel A의 데이터가 변경되었을 때, ViewModel B의 값도 알아서 동기화되어야 하는 상황"**이 빈번하게 발생합니다.
+앱이 조금만 커져도 <strong>"ViewModel A의 데이터가 변경되었을 때, ViewModel B의 값도 알아서 동기화되어야 하는 상황"</strong>이 빈번하게 발생합니다.
 
 예를 들어, WaWa Point에서는 사용자가 백업 파일을 복원하여 데이터가 통째로 바뀌었을 때, 복원 기능 담당인 `BackupViewModel`이 변경 사실을 메인 데이터 담당인 `PointViewModel`에게 갱신 지시를 내려주어야 합니다.
 
-이처럼 **하나의 Provider가 다른 Provider의 상태(State)에 의존하고 있을 때** 유용하게 쓰이는 도구가 바로 **ProxyProvider**입니다.
+이처럼 <strong>하나의 Provider가 다른 Provider의 상태(State)에 의존하고 있을 때</strong> 유용하게 쓰이는 도구가 바로 <strong>ProxyProvider</strong>입니다.
 
 ---
 
@@ -33,7 +33,7 @@ graph TD
 
 ## 🛠️ WaWa Point 실전 프로젝트 분석
 
-WaWa Point는 `MultiProvider` 구조에서 **`ChangeNotifierProxyProvider`**를 활용하여 `PointViewModel`의 최신 인스턴스를 `BackupViewModel`로 계속 갱신 주입해 줍니다.
+WaWa Point는 `MultiProvider` 구조에서 <strong>`ChangeNotifierProxyProvider`</strong>를 활용하여 `PointViewModel`의 최신 인스턴스를 `BackupViewModel`로 계속 갱신 주입해 줍니다.
 
 ```mermaid
 sequenceDiagram
@@ -110,6 +110,6 @@ class BackupViewModel extends ChangeNotifier {
 ```
 
 > [!IMPORTANT]
-> **ProxyProvider 작성 시 지켜야 할 기본 룰**
-> 1. `MultiProvider` 리스트 내에서 **의존 관계의 기준이 되는 클래스(`PointViewModel`)가 먼저 정의**되어 있어야 합니다. 그 밑에 의존하는 자식 클래스(`BackupViewModel`)가 와야 자식을 만들 때 부모의 인스턴스를 찾아 주입할 수 있습니다.
+> <strong>ProxyProvider 작성 시 지켜야 할 기본 룰</strong>
+> 1. `MultiProvider` 리스트 내에서 <strong>의존 관계의 기준이 되는 클래스(`PointViewModel`)가 먼저 정의</strong>되어 있어야 합니다. 그 밑에 의존하는 자식 클래스(`BackupViewModel`)가 와야 자식을 만들 때 부모의 인스턴스를 찾아 주입할 수 있습니다.
 > 2. `update` 콜백은 단순히 인스턴스를 전달하는 공간이어야 합니다. `update` 내부에서 새로운 비즈니스 데이터 연산을 실행하여 상태 변경(`notifyListeners`)을 일으키면 무한 루프가 발생하므로 주의해야 합니다.

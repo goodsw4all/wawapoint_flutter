@@ -4,7 +4,7 @@
 
 WaWa Point 프로젝트는 Dart 공식 코딩 규칙([Effective Dart](https://dart.dev/guides/language/effective-dart))을 바탕으로 한 명명 규칙을 철저하게 고수하고 있습니다. 
 
-이번 장에서는 3대 명명 규칙과 데이터 오염을 완벽히 방어하는 **private 캡슐화**에 대해 배웁니다.
+이번 장에서는 3대 명명 규칙과 데이터 오염을 완벽히 방어하는 <strong>private 캡슐화</strong>에 대해 배웁니다.
 
 ---
 
@@ -22,25 +22,25 @@ graph TD
 ```
 
 ### 1. `UpperCamelCase` (첫 글자 대문자)
-* **대상**: 클래스(Class), 열거형(Enum), 확장(Extension), 타입 정의(Typedef)
-* **예시**: `PointViewModel`, `TransactionType`, `TimePeriodExt`
+* <strong>대상</strong>: 클래스(Class), 열거형(Enum), 확장(Extension), 타입 정의(Typedef)
+* <strong>예시</strong>: `PointViewModel`, `TransactionType`, `TimePeriodExt`
 
 ### 2. `lowerCamelCase` (첫 글자 소문자, 단어 경계 대문자)
-* **대상**: 변수명, 메서드(함수)명, 매개변수(Parameter)명, 로컬 상수
-* **예시**: `currentBalance`, `loadRecords()`, `defaultPadding = 16.0`
+* <strong>대상</strong>: 변수명, 메서드(함수)명, 매개변수(Parameter)명, 로컬 상수
+* <strong>예시</strong>: `currentBalance`, `loadRecords()`, `defaultPadding = 16.0`
 
 ### 3. `snake_case` (모두 소문자, 언더바로 연결)
-* **대상**: 파일 이름(파일명), 디렉토리(폴더) 이름, 패키지 라이브러리명
-* **예시**: `dashboard_screen.dart`, `point_repository.dart`
-* **⚠️ 금지**: `DashboardScreen.dart` 또는 `point-repository.dart` 형태로 파일명을 생성해서는 안 됩니다.
+* <strong>대상</strong>: 파일 이름(파일명), 디렉토리(폴더) 이름, 패키지 라이브러리명
+* <strong>예시</strong>: `dashboard_screen.dart`, `point_repository.dart`
+* <strong>⚠️ 금지</strong>: `DashboardScreen.dart` 또는 `point-repository.dart` 형태로 파일명을 생성해서는 안 됩니다.
 
 ---
 
 ## 🔒 Private 식별자 (`_`)를 사용한 상태 은닉 (Encapsulation)
 
-객체지향 설계에서 가장 중요한 원칙 중 하나는 **"내부 상태는 나만 변경하고 외부에는 읽기 전용으로 제공한다"**는 것입니다. 
+객체지향 설계에서 가장 중요한 원칙 중 하나는 <strong>"내부 상태는 나만 변경하고 외부에는 읽기 전용으로 제공한다"</strong>는 것입니다. 
 
-만약 외부(View)에서 ViewModel의 핵심 리스트를 직접 지우거나 변경할 수 있다면 데이터 정합성이 순식간에 무너집니다. Dart는 변수나 클래스명 앞에 **언더바(`_`)**를 붙이면 자동으로 **해당 파일 내부에서만 접근 가능한 `private` 성질**을 가지게 됩니다.
+만약 외부(View)에서 ViewModel의 핵심 리스트를 직접 지우거나 변경할 수 있다면 데이터 정합성이 순식간에 무너집니다. Dart는 변수나 클래스명 앞에 <strong>언더바(`_`)</strong>를 붙이면 자동으로 <strong>해당 파일 내부에서만 접근 가능한 `private` 성질</strong>을 가지게 됩니다.
 
 ```mermaid
 graph LR
@@ -93,7 +93,7 @@ class PointViewModel extends ChangeNotifier {
 ```
 
 > [!IMPORTANT]
-> **List.unmodifiable()의 마법**
+> <strong>List.unmodifiable()의 마법</strong>
 > 그냥 `get records => _records;` 라고 쓰면 외부에서 `vm.records.add()`나 `vm.records.removeAt()`을 호출했을 때 여전히 내부 리스트가 변경되어 버립니다(참조 전달 때문). 
-> 완벽한 방어적 프로그래밍을 위해 Getter를 반환할 때 **`List.unmodifiable(_records)`**로 포장하여 반환하세요. 
+> 완벽한 방어적 프로그래밍을 위해 Getter를 반환할 때 <strong>`List.unmodifiable(_records)`</strong>로 포장하여 반환하세요. 
 > 이렇게 하면 외부에서 컬렉션을 임의로 조작하려고 시도할 때 컴파일러나 런타임이 에러를 뿜으며 조작을 원천 차단해 줍니다.
