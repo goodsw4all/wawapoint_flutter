@@ -1,0 +1,9 @@
+[book]
+authors = ["WaWa Point Team"]
+language = "ko"
+src = "src"
+title = "WaWa Point Flutter 개발 가이드북"
+
+[output.html]
+preferred-dark-theme = "navy"
+git-repository-url = "https://github.com/goodsw4all/wawapoint_flutter"
