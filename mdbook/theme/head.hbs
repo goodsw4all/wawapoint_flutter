@@ -1,0 +1,116 @@
+<!-- KaTeX CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
+    integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV" crossorigin="anonymous">
+
+<!-- KaTeX JavaScript -->
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"
+    integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8"
+    crossorigin="anonymous"></script>
+
+<!-- KaTeX Auto-render -->
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05"
+    crossorigin="anonymous"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        renderMathInElement(document.body, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "\\[", right: "\\]", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false }
+            ],
+            throwOnError: false
+        });
+    });
+</script>
+
+<!-- Mermaid 클릭 확대 모달 -->
+<script>
+    (function () {
+        document.addEventListener('DOMContentLoaded', function () {
+            // 모달 DOM 생성
+            var modal = document.createElement('div');
+            modal.id = 'mermaid-modal';
+            modal.setAttribute('role', 'dialog');
+            modal.setAttribute('aria-modal', 'true');
+
+            var hint = document.createElement('div');
+            hint.id = 'mermaid-modal-hint';
+            hint.textContent = 'ESC 또는 클릭하여 닫기';
+            modal.appendChild(hint);
+            document.body.appendChild(modal);
+
+            function closeModal() {
+                modal.classList.remove('active');
+                var inner = modal.querySelector('.mermaid-modal-inner');
+                if (inner) inner.remove();
+            }
+
+            modal.addEventListener('click', function (e) {
+                if (e.target === modal || e.target === hint) closeModal();
+            });
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') closeModal();
+            });
+
+            // 다이어그램에 클릭 핵들러 등록
+            function attachHandlers() {
+                document.querySelectorAll('.mermaid').forEach(function (el) {
+                    if (el.dataset.zoomReady) return;
+                    var svg = el.querySelector('svg');
+                    if (!svg) return;
+
+                    el.dataset.zoomReady = '1';
+                    el.title = '클릭하면 확대합니다';
+
+                    el.addEventListener('click', function () {
+                        var liveSvg = el.querySelector('svg');
+                        if (!liveSvg) return;
+                        var clone = liveSvg.cloneNode(true);
+                        clone.removeAttribute('style');
+
+                        // 뷰포트에 맞는 최적 크기 계산 (contain 방식)
+                        var vb = clone.getAttribute('viewBox');
+                        var natW, natH;
+                        if (vb) {
+                            var vbp = vb.trim().split(/[\s,]+/);
+                            natW = parseFloat(vbp[2]);
+                            natH = parseFloat(vbp[3]);
+                        } else {
+                            var bb = liveSvg.getBoundingClientRect();
+                            natW = bb.width || 800;
+                            natH = bb.height || 600;
+                        }
+                        var pad = 24;  // inner padding 2×12px
+                        var hintH = 40;  // hint bar + gap
+                        var avW = window.innerWidth * 0.96 - pad;
+                        var avH = window.innerHeight * 0.92 - pad - hintH;
+                        var scale = Math.min(avW / natW, avH / natH);
+                        clone.setAttribute('width', Math.round(natW * scale) + 'px');
+                        clone.setAttribute('height', Math.round(natH * scale) + 'px');
+
+                        var inner = document.createElement('div');
+                        inner.className = 'mermaid-modal-inner';
+                        inner.appendChild(clone);
+
+                        var prev = modal.querySelector('.mermaid-modal-inner');
+                        if (prev) prev.remove();
+                        modal.appendChild(inner);
+                        modal.classList.add('active');
+
+                        inner.addEventListener('click', function (e) { e.stopPropagation(); });
+                        inner.addEventListener('click', closeModal);
+                    });
+                });
+            }
+
+            // mermaid 렌더링 완료 후 핵들러 연결 (MutationObserver + fallback)
+            var observer = new MutationObserver(attachHandlers);
+            observer.observe(document.body, { childList: true, subtree: true });
+            setTimeout(attachHandlers, 800);
+        });
+    })();
+</script>

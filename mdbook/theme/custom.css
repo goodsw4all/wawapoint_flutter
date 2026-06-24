@@ -1,0 +1,597 @@
+/* theme/custom.css */
+/* 리디바탕 폰트는 theme/fonts/fonts.css에서 정의 */
+
+:root {
+    --bg-color: #ffffff;
+    /* 흰색 배경 */
+    --text-color: #333333;
+    /* 어두운 회색 본문 텍스트 (가독성 향상) */
+    --header-color: #000000;
+    /* 검은색 제목 (대비 극대화) */
+    --accent-color: #007acc;
+    /* 링크 및 강조 색상 */
+    --border-color: #e0e0e0;
+    /* 구분선 색상 */
+    --code-bg-color: #f5f5f5;
+    /* 연한 회색 코드 배경 */
+    --quote-bg-color: #f9f9f9;
+    /* 연한 회색 인용문 배경 */
+    --quote-text-color: #555555;
+    /* 중간 회색 인용문 텍스트 */
+    --cover-bg-color: #0b1220;
+    /* 필요하면 색상값을 변경하세요 */
+}
+
+.menu-title {
+    font-size: 2.5rem;
+    font-weight: 900;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'Ridibatang', 'Nanum Myeongjo', 'Apple Myungjo', 'Malgun Gothic', serif;
+    font-size: 1.8rem;
+    /* 가독성을 위해 폰트 크기를 약간 키웁니다. */
+    line-height: 1.8;
+    /* 💡 body에 선언하여 하위 요소에 상속되도록 합니다. (중복 제거) */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+li {
+    margin-bottom: 0.2em;
+}
+
+/* 제목(Heading) 스타일 */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: var(--header-color);
+    font-weight: 600;
+    margin-top: 2em;
+    margin-bottom: 1em;
+    border-bottom: 1px solid var(--border-color);
+    /* 은은한 하단 구분선 */
+    padding-bottom: 0.3em;
+}
+
+h1 {
+    font-size: 2.2rem;
+    border-bottom-width: 2px;
+    font-weight: bold;
+    /* h1은 더 굵은 구분선 */
+}
+
+h2 {
+    font-size: 2.0rem;
+}
+
+h3 {
+    font-size: 1.8rem;
+    border-bottom: none;
+    /* h3부터는 구분선 제거 */
+}
+
+h4,
+h5,
+h6 {
+    font-size: 1.8rem;
+}
+
+/* 단락(Paragraph) 스타일 */
+p {
+    margin-bottom: 1.0em;
+    line-height: 1.8;
+    text-align: justify;
+}
+
+
+/* 링크(Link) 스타일 */
+a {
+    color: var(--accent-color);
+    text-decoration: none;
+    /* 밑줄 제거 */
+    transition: color 0.2s ease-in-out;
+}
+
+a:hover {
+    color: #0056b3;
+    /* 호버 시 색상을 약간 어둡게 */
+    text-decoration: underline;
+    /* 호버 시 밑줄 표시 */
+}
+
+/* 인용문(Blockquote) 스타일 */
+blockquote {
+    margin: 1.5em 0;
+    padding: 0.5em 1.5em;
+    border-left: 2px solid var(--accent-color);
+    /* 💡 변수 사용으로 변경 */
+    background-color: var(--quote-bg-color);
+    color: var(--quote-text-color);
+    font-style: italic;
+}
+
+/* 코드(Code) 스타일 */
+code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    background-color: var(--code-bg-color);
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-size: 0.85em;
+}
+
+pre {
+    background-color: var(--code-bg-color);
+    border-radius: 5px;
+
+    /* 긴 코드 처리 개선 */
+    white-space: pre-wrap;
+    /* 긴 코드 줄이 자동으로 줄바꿈되도록 설정 */
+    /* 💡 word-wrap 대신 표준 속성인 overflow-wrap 사용을 권장 */
+    overflow-wrap: break-word;
+    /* 매우 긴 단어도 강제로 줄바꿈합니다. */
+
+    line-height: 1.5;
+    border: 1px solid var(--border-color);
+}
+
+/* 수식 폰트 크기 조정 (KaTeX) */
+.katex {
+    font-size: 1.0em !important;
+}
+
+/* 테이블 스타일 */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5em 0;
+    font-size: 0.85em;
+    /* 테이블 폰트 크기를 85%로 축소 */
+}
+
+table th,
+table td {
+    padding: 0.6em 0.8em;
+    border: 1px solid var(--border-color);
+    text-align: left;
+    vertical-align: middle;
+}
+
+table th {
+    background-color: #f5f5f5;
+    font-weight: 600;
+    color: var(--header-color);
+}
+
+table tr:nth-child(even) {
+    background-color: #fafafa;
+}
+
+table tr:hover {
+    background-color: #f0f0f0;
+}
+
+/* 이미지와 캡션 스타일 */
+img {
+    display: block;
+    margin: 1.5em auto;
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 아이콘 이미지 (hand, brain, caution)를 작게 표시 */
+img[src*="hand.jpg"],
+img[src*="brain.jpg"],
+img[src*="caution.jpg"] {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    margin: 0 0.5em 0 0;
+    vertical-align: middle;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+/* 제목(h1-h6) 안의 모든 이미지를 작게 표시 */
+h1 img,
+h2 img,
+h3 img,
+h4 img,
+h5 img,
+h6 img {
+    display: inline-block;
+    width: 1.5em;
+    height: 1.5em;
+    margin: 0 0.3em 0 0;
+    vertical-align: middle;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+/* 이미지 바로 다음의 em (이탤릭) 텍스트를 캡션으로 스타일링 */
+img+em {
+    display: block;
+    text-align: center;
+    font-size: 0.9em;
+    color: #666;
+    margin-top: -1em;
+    margin-bottom: 1.5em;
+    font-style: italic;
+}
+
+/* 주석자(Annotator) 코멘트 스타일 - 원본 책의 주석 블록 재현 */
+/* 주석 블록 전체 컨테이너 */
+blockquote {
+    background-color: #f9f9f9;
+    border-left: 4px solid #ddd;
+    margin: 1em 1.5em;
+    padding: 1em 1.5em;
+    font-size: 0.9em;
+    line-height: 1.6;
+}
+
+/* 주석자별 색상 구분 */
+blockquote:has(em:first-child) {
+    border-left-color: #4a90e2;
+}
+
+/* 주석자 의견 블록의 상단/하단 구분선 이미지 */
+img[src*="00005.gif"],
+img[src*="00006.gif"] {
+    display: block !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    margin: 1.2em 0 0 0;
+    /* 1em * 1.2 */
+    border-radius: 0;
+    box-shadow: none !important;
+}
+
+/* 하단 구분선 여백 조정 */
+img[src*="00006.gif"] {
+    margin: 0 0 0.6em 0;
+    /* 0.5em * 1.2 */
+}
+
+/* 섹션 구분 기호 (00007.gif - 중앙 정렬) */
+img[src*="00007.gif"] {
+    display: block;
+    width: auto;
+    max-width: 60px;
+    height: auto;
+    margin: 2em auto;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+/* 매트릭스/차트 이미지 스타일 (00008.gif 등) */
+img[src*="00008.gif"] {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    margin: 1.5em auto;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 주석자 의견 블록 스타일 */
+/* JavaScript (annotator-style.js)가 동적으로 스타일 적용 */
+/* 이 CSS는 폴백용 기본 스타일 */
+
+/* 이미지를 포함하는 p 태그의 여백 조정 */
+p:has(> img[src*="00005.gif"]) {
+    margin: 1em 0 0 0 !important;
+    padding: 0 !important;
+}
+
+p:has(> img[src*="00006.gif"]) {
+    margin: 0 0 0.5em 0 !important;
+    padding: 0 !important;
+}
+
+/* 폴백: 직접 이미지 스타일링 */
+p img[src*="00005.gif"],
+p img[src*="00006.gif"] {
+    margin: 0;
+}
+
+/* 인용문 내부 텍스트 */
+blockquote p {
+    margin: 0.5em 0;
+}
+
+blockquote p:first-of-type {
+    margin-top: 0;
+}
+
+blockquote p:last-of-type {
+    margin-bottom: 0;
+}
+
+/* Mermaid 다이어그램 가독성 개선 */
+.mermaid {
+    display: block;
+    overflow-x: auto;
+    /* 넓은 다이어그램은 가로 스크롤 허용 */
+    width: 100%;
+    cursor: zoom-in;
+    /* 클릭 확대 힌트 */
+}
+
+.mermaid svg {
+    max-width: none;
+    /* 너비 축소 금지 — 원래 크기 유지 */
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+/* ─── Mermaid 클릭 확대 팝업 ─────────────────────── */
+#mermaid-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 9999;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 12px;
+}
+
+#mermaid-modal.active {
+    display: flex;
+}
+
+#mermaid-modal-hint {
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 0.75rem;
+    letter-spacing: 0.03em;
+    order: 2;
+    user-select: none;
+    flex-shrink: 0;
+}
+
+.mermaid-modal-inner {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 8px 48px rgba(0, 0, 0, 0.55);
+    overflow: auto;
+    max-width: 96vw;
+    max-height: 92vh;
+    order: 1;
+    cursor: zoom-out;
+    flex-shrink: 0;
+    box-sizing: border-box;
+}
+
+.mermaid-modal-inner svg {
+    display: block;
+}
+
+/* Mermaid 텍스트 가독성 향상 */
+.mermaid .nodeLabel,
+.mermaid .edgeLabel,
+.mermaid .label,
+.mermaid-modal-inner .nodeLabel,
+.mermaid-modal-inner .edgeLabel,
+.mermaid-modal-inner .label {
+    color: #000000 !important;
+    font-weight: 600 !important;
+    font-size: 15px !important;
+    font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif !important;
+}
+
+/* Mermaid 노드 내부 텍스트 스타일 */
+.mermaid text,
+.mermaid-modal-inner text {
+    fill: #000000 !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+}
+
+/* Mermaid 노드 스타일 개선 */
+.mermaid .node rect,
+.mermaid .node circle,
+.mermaid .node ellipse,
+.mermaid .node polygon {
+    stroke-width: 2px !important;
+}
+
+/* 다크 모드용 Mermaid 텍스트 */
+.ayu .mermaid .nodeLabel,
+.ayu .mermaid .edgeLabel,
+.coal .mermaid .nodeLabel,
+.coal .mermaid .edgeLabel,
+.navy .mermaid .nodeLabel,
+.navy .mermaid .edgeLabel,
+.rust .mermaid .nodeLabel,
+.rust .mermaid .edgeLabel {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+}
+
+/* 다크 모드용 이미지 캡션 */
+.ayu img+em,
+.coal img+em,
+.navy img+em,
+.rust img+em {
+    color: #aaa;
+}
+
+/* 다크 모드 전용 색상 변수 오버라이드 */
+.ayu,
+.coal,
+.navy,
+.rust {
+    --text-color: #e8e8e8 !important;
+    --header-color: #ffffff !important;
+    --code-bg-color: #2b2b2b !important;
+    --quote-bg-color: #2b2b2b !important;
+    --quote-text-color: #cccccc !important;
+    --border-color: #404040 !important;
+}
+
+/* 다크 모드 본문 텍스트 */
+.ayu body,
+.coal body,
+.navy body,
+.rust body {
+    color: #e8e8e8 !important;
+}
+
+/* 다크 모드 헤더 */
+.ayu h1,
+.ayu h2,
+.ayu h3,
+.ayu h4,
+.ayu h5,
+.ayu h6,
+.coal h1,
+.coal h2,
+.coal h3,
+.coal h4,
+.coal h5,
+.coal h6,
+.navy h1,
+.navy h2,
+.navy h3,
+.navy h4,
+.navy h5,
+.navy h6,
+.rust h1,
+.rust h2,
+.rust h3,
+.rust h4,
+.rust h5,
+.rust h6 {
+    color: #ffffff !important;
+    border-bottom-color: #404040 !important;
+}
+
+/* 다크 모드 코드 블록 */
+.ayu code,
+.ayu pre,
+.coal code,
+.coal pre,
+.navy code,
+.navy pre,
+.rust code,
+.rust pre {
+    background-color: #2b2b2b !important;
+    border-color: #404040 !important;
+}
+
+/* 다크 모드 인용문 */
+.ayu blockquote,
+.coal blockquote,
+.navy blockquote,
+.rust blockquote {
+    background-color: #2b2b2b !important;
+    border-left-color: #007acc !important;
+    color: #cccccc !important;
+}
+
+/* 다크 모드 링크 */
+.ayu a,
+.coal a,
+.navy a,
+.rust a {
+    color: #58a6ff !important;
+}
+
+.ayu a:hover,
+.coal a:hover,
+.navy a:hover,
+.rust a:hover {
+    color: #79b8ff !important;
+}
+
+/* 추가: 뷰포트 전체를 정확히 채우도록 기본 리셋 */
+html,
+body {
+    height: 100%;
+    margin: 0;
+}
+
+@page {
+
+    /* --- A 시리즈 (ISO 216: 국제/한국 표준) --- */
+
+    /* A0: 포스터, 설계 도면 */
+    /* size: 841mm 1189mm; */
+
+    /* A1: 포스터, 지도 */
+    /* size: 594mm 841mm; */
+
+    /* A2: 달력, 차트 */
+    /* size: 420mm 594mm; */
+
+    /* A3: 도면, 악보, 신문 (A4의 2배) */
+    /* size: 297mm 420mm; */
+
+    /* [기본값] A4: 사무용 표준 용지, 보고서, 논문 */
+    /* size: 210mm 297mm; */
+
+    /* A5: 다이어리, 소설책, 교과서 (A4의 절반) */
+    /* size: 148mm 210mm; */
+
+    /* A6: 엽서, 문고본 */
+    /* size: 105mm 148mm; */
+
+    /* A7: 주머니 수첩 */
+    /* size: 74mm 105mm; */
+
+    /* A8: 명함, 카드 */
+    /* size: 52mm 74mm; */
+
+
+    /* --- B 시리즈 (JIS P 0138: 한국 인쇄소/제본 표준) --- */
+    /* 주의: 국제 표준(ISO) B시리즈와 크기가 다릅니다. 한국은 주로 이 규격을 씁니다. */
+
+    /* B0: 전지 */
+    /* size: 1030mm 1456mm; */
+
+    /* B1: 2절지, 대형 포스터 */
+    /* size: 728mm 1030mm; */
+
+    /* B2: 달력, 국전지 반절 */
+    /* size: 515mm 728mm; */
+
+    /* B3: 타블로이드 신문, 스케치북 */
+    /* size: 364mm 515mm; */
+
+    /* B4: 상장, 악보, 시험지 (A3와 A4 사이) */
+    /* size: 257mm 364mm; */
+
+    /* B5: 4x6배판 - 일반적인 단행본, 학습지, 문제집 (A4와 A5 사이) */
+    size: 182mm 257mm;
+
+    /* B6: 4x6판 - 작은 단행본, 에세이 */
+    /* size: 128mm 182mm; */
+
+    /* B7: 여권 크기 */
+    /* size: 91mm 128mm; */
+
+
+    /* --- 공통 설정 --- */
+    /* 사이즈에 맞춰 여백(margin)을 조절해주세요. 종이가 작을수록 여백도 줄여야 합니다. */
+    margin: 1cm;
+}
+
+/* 왼쪽 사이드바 목차에서 본문 내의 헤더(TOC)가 노출되는 영역 숨기기 */
+.on-this-page {
+    display: none !important;
+}

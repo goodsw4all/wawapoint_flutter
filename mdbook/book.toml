@@ -4,6 +4,25 @@ language = "ko"
 src = "src"
 title = "WaWa Point Flutter 개발 가이드북"
 
+[preprocessor.mermaid]
+command = "mdbook-mermaid"
+
 [output.html]
+default-theme = "light"
 preferred-dark-theme = "navy"
+additional-css = ["theme/custom.css", "theme/fonts/fonts.css"]
+additional-js = [
+    "theme/mermaid.min.js",
+    "theme/mermaid-init.js",
+    "theme/annotator-style.js",
+    "theme/image-popup.js"
+]
+no-section-label = true
 git-repository-url = "https://github.com/goodsw4all/wawapoint_flutter"
+
+[output.html.print]
+enable = true
+
+[output.html.fold]
+enable = true
+level = 1
