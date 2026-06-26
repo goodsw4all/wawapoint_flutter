@@ -48,8 +48,34 @@ Widget build(BuildContext context) {
 ```
 
 > [!WARNING]
-> **초보자의 실수: 다른 위치의 context 사용하기**
-> 다이얼로그(`showDialog`)를 띄우거나 Navigator를 통해 새 화면으로 이동할 때, 종종 `BuildContext`가 유효하지 않거나 엉뚱한 위치를 가리켜 "Navigator operation requested with a context that does not include a Navigator." 같은 에러가 발생합니다. 비동기 작업(`await`) 후에 `context`를 사용할 때는 반드시 **`if (mounted)`**를 검사하여 위젯이 여전히 트리 상에 존재하는지 확인해야 합니다.
+> **초보자들의 단골 크래시: 비동기 작업(Async Gap) 후 context 사용**
+>
+> 1. **비동기 갭(Asynchronous Gap)이란?**
+>    서버에서 데이터를 가져오거나 파일 입출력을 수행하는 등의 비동기 작업(`await`)은 실행 후 완료되기까지 시간이 걸립니다. 이 `await` 키워드가 실행되고 있는 중간 대기 지점을 "비동기 갭"이라고 부릅니다.
+> 
+> 2. **무엇이 문제인가요?**
+>    사용자가 화면에서 **[백업하기]** 버튼을 눌러 비동기 파일 작성이 시작되었습니다. 그런데 작업이 끝나기도 전에 사용자가 뒤로가기 버튼을 눌러 화면(위젯)을 닫아버렸습니다.
+>    잠시 후 파일 작성이 끝나면, 코드에서는 다음 줄로 넘어가 `Navigator.pop(context)`이나 `ScaffoldMessenger.of(context).showSnackBar(...)`를 호출하려고 합니다.
+>    하지만 이미 화면이 소멸해 위젯 트리에서 떨어져 나갔기 때문에, `context`가 가리키는 주소는 공중에 붕 뜨게 됩니다. 이때 Flutter는 **"A BuildContext was used after an asynchronous gap"** (비동기 작업 이후 유효하지 않은 context 사용됨) 이라는 경고나 에러를 뿜으며 크래시를 유발합니다.
+>    *(비유하자면, 이미 철거되어 사라진 건물의 주소판만 보고 집배원이 편지를 배달하려다가 길을 잃는 상황과 같습니다.)*
+> 
+> 3. **안전장치: `if (!context.mounted) return;`**
+>    이를 방지하기 위해 `await` 작업이 끝난 직후에는 **반드시** 이 `context`가 아직도 화면에 안전하게 붙어 있는지(Mounted) 검사해야 합니다.
+> 
+> ```dart
+> onPressed: () async {
+>   // 1. 시간이 걸리는 백업 파일 생성 작업 (비동기)
+>   await backupVM.exportBackup(); 
+>   
+>   // 2. [안전장치] 만약 대기하는 동안 사용자가 화면을 벗어났다면, 아래 코드를 실행하지 않고 조기 종료합니다.
+>   if (!context.mounted) return; 
+>   
+>   // 3. 화면이 여전히 잘 살아있을 때만 context를 활용한 UI 연동 작업을 진행합니다.
+>   ScaffoldMessenger.of(context).showSnackBar(
+>     const SnackBar(content: Text('백업이 성공적으로 완료되었습니다!')),
+>   );
+> }
+> ```
 
 ---
 
@@ -83,19 +109,19 @@ graph TD
 
 Flutter 개발을 시작하면 화면에 노란색과 검은색 빗금 패턴의 경고가 뜨거나, 화면 전체가 붉은색 에러로 덮이는 현상을 반드시 겪게 됩니다. 당황하지 마세요. 원인은 명확합니다.
 
-### 3.1. `RenderFlex overflowed` (화면 영역 초과)
+### 3.1. `RenderFlex overflowed` (화면 경계 밖으로 삐져나온 레이아웃 에러)
 
-* **에러 메시지**: `A RenderFlex overflowed by xxx pixels on the bottom/right.`
-* **발생 원인**: `Row`나 `Column` 같은 Flex 위젯 내부의 자식들이 화면 크기(폭 또는 높이)보다 커서 넘쳤을 때 발생합니다. 특히 가로 화면에서 긴 텍스트를 `Row`로 감싸거나, 가상 키보드가 올라오면서 세로 공간이 부족해질 때 자주 일어납니다.
+* **에러 메시지**: `A RenderFlex overflowed by xxx pixels on the bottom/right.` (또는 화면에 나타나는 노란색과 검은색 빗금 패턴 경고)
+* **발생 원인**: 위젯의 부모(예: `Row`나 `Column` 같은 정렬 상자)가 제공하는 물리적 크기 제한보다 그 안에 담긴 자식 위젯(텍스트, 이미지 등)의 크기가 더 클 때 화면 밖으로 넘치면서 발생합니다. 가로 정렬 상황에서 글자가 너무 길거나, 세로 정렬 상황에서 가상 키보드가 올라와 세로 화면 공간이 갑자기 좁아질 때 단골로 일어납니다.
 
 ```mermaid
 graph LR
-    subgraph "Column/Row (Flex 크기 제한)"
+    subgraph "Column/Row (정렬 상자 영역 제한)"
         A["자식 위젯 1 (정상)"]
         B["자식 위젯 2 (정상)"]
-        C["자식 위젯 3 (너무 길어서 물리 화면을 벗어남!)"]
+        C["자식 위젯 3 (공간이 부족해 화면 밖으로 삐져나감!)"]
     end
-    C -.->|크래시!| D["⚠️ Overflow 발생"]
+    C -.->|빗금 패턴 에러 발생!| D["⚠️ 레이아웃 Overflow"]
 
     style D fill:#3A1B1B,stroke:#FF9500,color:#fff
 ```
